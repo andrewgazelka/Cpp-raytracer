@@ -37,33 +37,38 @@ using std::cout;
 using std::endl;
 
 
-bool raySphereIntersect_fast(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius){
+bool raySphereIntersect_fast(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
     Dir3D dir = rayLine.dir();
-    float a = dot(dir,dir);
+    float a = dot(dir, dir);
     Dir3D toStart = (rayStart - sphereCenter);
-    float b = 2 * dot(dir,toStart);
-    float c = dot(toStart,toStart) - sphereRadius*sphereRadius;
-    float discr = b*b - 4*a*c;
+    float b = 2 * dot(dir, toStart);
+    float c = dot(toStart, toStart) - sphereRadius * sphereRadius;
+    float discr = b * b - 4 * a * c;
     if (discr < 0) return false;
-    else{
-        float t0 = (-b + sqrt(discr))/(2*a);
-        float t1 = (-b - sqrt(discr))/(2*a);
+    else {
+        float t0 = (-b + sqrt(discr)) / (2 * a);
+        float t1 = (-b - sqrt(discr)) / (2 * a);
         if (t0 > 0 || t1 > 0) return true;
     }
     return false;
 }
-//
-bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius){
-    Point3D projPoint = dot(rayLine,sphereCenter)*rayLine;      //Project to find closest point between circle center and line [proj(sphereCenter,rayLine);]
-    float distSqr = projPoint.distToSqr(sphereCenter);          //Point-line distance (squared)
-    float d2 = distSqr/(sphereRadius*sphereRadius);             //If distance is larger than radius, then...
-    if (d2 > 1) return false;                                   //... the ray missed the sphere
-    float w = sphereRadius*sqrt(1-d2);                          //Pythagorean theorem to determine dist between proj point and intersection points
-    Point3D p1 = projPoint + rayLine.dir()*w;                   //Add/subtract above distance to find hit points
-    Point3D p2 = projPoint - rayLine.dir()*w;
 
-    if (dot((p1-rayStart),rayLine.dir()) >= 0) return true;     //Is the first point in same direction as the ray line?
-    if (dot((p2-rayStart),rayLine.dir()) >= 0) return true;     //Is the second point in same direction as the ray line?
+//
+bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
+    Point3D projPoint = dot(rayLine, sphereCenter) *
+                        rayLine;      //Project to find closest point between circle center and line [proj(sphereCenter,rayLine);]
+    float distSqr = projPoint.distToSqr(sphereCenter);          //Point-line distance (squared)
+    float d2 = distSqr / (sphereRadius * sphereRadius);             //If distance is larger than radius, then...
+    if (d2 > 1) return false;                                   //... the ray missed the sphere
+    float w = sphereRadius * sqrt(1 -
+                                  d2);                          //Pythagorean theorem to determine dist between proj point and intersection points
+    Point3D p1 = projPoint + rayLine.dir() * w;                   //Add/subtract above distance to find hit points
+    Point3D p2 = projPoint - rayLine.dir() * w;
+
+    if (dot((p1 - rayStart), rayLine.dir()) >= 0)
+        return true;     //Is the first point in same direction as the ray line?
+    if (dot((p2 - rayStart), rayLine.dir()) >= 0)
+        return true;     //Is the second point in same direction as the ray line?
     return false;
 }
 
@@ -98,16 +103,13 @@ int main(int argc, char **argv) {
     auto t_start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
-//            //TODO: In what way does this assumes the basis is orthonormal?
-            float u = (halfW - (imgW) * ((i + 0.5f) / imgW));
-            float v = (halfH - (imgH) * ((j + 0.5f) / imgH));
+            float u = (halfW - (imgW) * (((float) i + 0.5f) / imgW));
+            float v = (halfH - (imgH) * (((float) j + 0.5f) / imgH));
             Point3D p = eye - d * forward + u * right + v * up;
             Dir3D rayDir = (p - eye);
             Line3D rayLine = vee(eye, rayDir).normalized();  //Normalizing here is optional
             bool hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
-            Color color;
-            if (hit) color = Color(1, 1, 1);
-            else color = Color(0, 0, 0);
+            Color color = hit ? Color(1, 1, 1) : data.background;
             outputImg.setPixel(i, j, color);
             //outputImg.setPixel(i,j, Color(fabs(i/imgW),fabs(j/imgH),fabs(0))); //TODO: Try this, what is it visualizing?
         }
