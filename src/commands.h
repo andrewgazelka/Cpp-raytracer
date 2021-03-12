@@ -38,7 +38,7 @@ private:
     std::unordered_map<std::string, Command> commands{
             {"camera_pos",        Command::CAMERA_POS},
             {"camera_fwd",        Command::CAMERA_FWD},
-            {"camera_up",        Command::CAMERA_UP},
+            {"camera_up",         Command::CAMERA_UP},
             {"camera_fov_ha",     Command::CAMERA_FOV_HA},
             {"film_resolution",   Command::FILM_RESOLUTION},
             {"output_image",      Command::OUTPUT_IMAGE},
@@ -56,7 +56,9 @@ private:
             {"point_light",       Command::POINT_LIGHT},
             {"spot_light",        Command::SPOT_LIGHT},
             {"ambient_light",     Command::AMBIENT_LIGHT},
-            {"max_depth",         Command::MAX_DEPTH}
+            {"max_depth",         Command::MAX_DEPTH},
+            {"output_file",       Command::OUTPUT_IMAGE}, // to be backward compatible with hw3
+            {"image_resolution",  Command::FILM_RESOLUTION}, // to be backward compatible with hw3
     };
 };
 

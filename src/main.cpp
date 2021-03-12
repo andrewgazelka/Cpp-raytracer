@@ -83,6 +83,7 @@ int main(int argc, char **argv) {
     auto right = data.cameraRight;
     auto sphere = data.spheres[0];
     auto spherePos = sphere.pos;
+
     auto sphereRadius = sphere.radius;
     auto imgName = data.outputImage;
 
@@ -98,17 +99,17 @@ int main(int argc, char **argv) {
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
 //            //TODO: In what way does this assumes the basis is orthonormal?
-//            float u = (halfW - (imgW) * ((i + 0.5f) / imgW));
-//            float v = (halfH - (imgH) * ((j + 0.5f) / imgH));
-//            Point3D p = eye - d * forward + u * right + v * up;
-//            Dir3D rayDir = (p - eye);
-//            Line3D rayLine = vee(eye, rayDir).normalized();  //Normalizing here is optional
-//            bool hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
-//            Color color;
-//            if (hit) color = Color(1, 1, 1);
-//            else color = Color(0, 0, 0);
-//            outputImg.setPixel(i, j, color);
-//            //outputImg.setPixel(i,j, Color(fabs(i/imgW),fabs(j/imgH),fabs(0))); //TODO: Try this, what is it visualizing?
+            float u = (halfW - (imgW) * ((i + 0.5f) / imgW));
+            float v = (halfH - (imgH) * ((j + 0.5f) / imgH));
+            Point3D p = eye - d * forward + u * right + v * up;
+            Dir3D rayDir = (p - eye);
+            Line3D rayLine = vee(eye, rayDir).normalized();  //Normalizing here is optional
+            bool hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
+            Color color;
+            if (hit) color = Color(1, 1, 1);
+            else color = Color(0, 0, 0);
+            outputImg.setPixel(i, j, color);
+            //outputImg.setPixel(i,j, Color(fabs(i/imgW),fabs(j/imgH),fabs(0))); //TODO: Try this, what is it visualizing?
         }
     }
     auto t_end = std::chrono::high_resolution_clock::now();
