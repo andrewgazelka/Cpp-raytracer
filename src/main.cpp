@@ -35,7 +35,7 @@
 #include <limits>
 #include <boost/random.hpp>
 
-#define SAMPLES 10
+#define SAMPLES 50
 #define SEED 1234
 
 using std::cout;

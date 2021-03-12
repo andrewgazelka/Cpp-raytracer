@@ -5,9 +5,9 @@
 #include "utils.h"
 #include <optional>
 
-#define Kc 1.0f // standard term
-#define K1 0.2f // proportional term
-#define Kq 0.3f // squared term
+#define Kc 0.0f // standard term
+#define K1 0.0f // proportional term
+#define Kq 1.0 // squared term.
 
 using std::vector;
 
@@ -102,7 +102,7 @@ private:
             let rayLine = vee(hitLocation, lightDirection).normalized();
 
             // continue because there is an intersection
-            if (anyIntersect(hitLocation, rayLine, spheres)){
+            if (anyIntersect(hitLocation, rayLine, spheres)) {
                 continue;
             }
 
