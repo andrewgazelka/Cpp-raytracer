@@ -11,10 +11,15 @@ using boost::algorithm::to_lower;
 
 int i = 1;
 
-
 InputData FileReader::readFile(const string &fileName) {
 
-    ifstream inputStream("dasd");
+    ifstream inputStream(fileName);
+
+    // is empty
+    if(inputStream.peek() == std::ifstream::traits_type::eof()){
+        printf("exit or non-existant file %s\n", fileName.c_str());
+        exit(1);
+    }
 
     InputData data;
 
@@ -41,6 +46,9 @@ InputData FileReader::readFile(const string &fileName) {
             printf("Error entered a line without a command!\n");
             exit(1);
         }
+
+        // remove :
+        start.pop_back();
 
         to_lower(start); // makes sure lowercase
 

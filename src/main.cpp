@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include <iostream>
+#include "FileReader.h"
 
 using std::cout;
 using std::endl;
@@ -12,4 +13,6 @@ int main(int argc, char **argv) {
     }
     auto fileName = std::string(argv[1]);
     cout << "Parsing " << fileName << endl;
+    auto result = FileReader::readFile(fileName);
+    printf("done\n");
 }

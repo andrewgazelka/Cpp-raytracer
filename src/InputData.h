@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <ostream>
 #include "PGA/PGA_3D.h"
 #include "PGA/image_lib.h"
 
@@ -48,6 +49,11 @@ struct Resolution {
         input >> w >> h;
         res = {w, h};
         return input;
+    }
+
+    inline friend std::ostream &operator<<(std::ostream &os, const Resolution &resolution) {
+        os << "width: " << resolution.width << " height: " << resolution.height;
+        return os;
     }
 };
 
@@ -162,6 +168,7 @@ struct AmbientLight {
     uint r, g, b;
 };
 
+
 struct InputData {
     Point3D cameraPos = {0, 0, 0};
     Dir3D cameraFwd = {0, 0, 1};
@@ -186,5 +193,6 @@ struct InputData {
     vector<SpotLight> spotLights;
     Color ambientLight = {0, 0, 0};
     uint maxDepth = 5;
+
 };
 
