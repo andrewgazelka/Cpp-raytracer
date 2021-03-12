@@ -8,7 +8,7 @@ add_subdirectory(test)
 
 #include_directories(test)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 
 include_directories(src)
