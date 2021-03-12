@@ -174,6 +174,7 @@ struct InputData {
     Point3D cameraPos = {0, 0, 0};
     Dir3D cameraForward = {0, 0, 1};
     Dir3D cameraUp = {0, 1, 0};
+    uint samples = 10;
     Dir3D cameraRight = {};
     float cameraFovHA = 45.0;
     Resolution resolution = {

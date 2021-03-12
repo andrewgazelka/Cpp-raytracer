@@ -35,7 +35,6 @@
 #include <limits>
 #include <boost/random.hpp>
 
-#define SAMPLES 50
 #define SEED 1234
 
 using std::cout;
@@ -63,6 +62,7 @@ int main(int argc, char **argv) {
     let right = data.cameraRight;
 
     let imgName = data.outputImage;
+    let samples = data.samples;
 
     // float versions
     let imgW = imageWidth, imgH = imageHeight;
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
             Color sampleSums;
-            for (int s = 0; s < SAMPLES; s++) {
+            for (int s = 0; s < samples; s++) {
 
                 // First sample is in the center. The rest are random
                 let dx = s == 0 ? 0.5f : dist(gen);
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
                     sampleSums = sampleSums + data.background;
                 }
             }
-            let predictedColor = sampleSums / SAMPLES;
+            let predictedColor = sampleSums / samples;
             outputImg.setPixel(i, j, predictedColor);
         }
     }

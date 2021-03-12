@@ -23,7 +23,8 @@ enum class Command {
     POINT_LIGHT,
     SPOT_LIGHT,
     AMBIENT_LIGHT,
-    MAX_DEPTH
+    MAX_DEPTH,
+    SAMPLES
 };
 
 class CommandGetter {
@@ -59,6 +60,7 @@ private:
             {"max_depth",         Command::MAX_DEPTH},
             {"output_file",       Command::OUTPUT_IMAGE}, // to be backward compatible with hw3
             {"image_resolution",  Command::FILM_RESOLUTION}, // to be backward compatible with hw3
+            {"samples",           Command::SAMPLES},
     };
 };
 

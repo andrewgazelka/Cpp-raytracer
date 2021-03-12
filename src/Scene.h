@@ -7,7 +7,7 @@
 
 #define Kc 0.0f // standard term
 #define K1 0.0f // proportional term
-#define Kq 1.0 // squared term.
+#define Kq 1.0f // squared term.
 
 using std::vector;
 

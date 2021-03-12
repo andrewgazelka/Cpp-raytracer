@@ -153,6 +153,9 @@ InputData FileReader::readFile(const string &fileName) {
             case Command::MAX_DEPTH:
                 ls >> data.maxDepth;
                 break;
+            case Command::SAMPLES:
+                ls >> data.samples;
+                break;
         }
 
     }
