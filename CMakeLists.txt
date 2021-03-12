@@ -22,7 +22,7 @@ add_executable(proj3a
         src/FileReader.h
         src/commands.h
         src/InputData.h
-        )
+        src/Color.cpp src/Color.h)
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)

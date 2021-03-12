@@ -2,84 +2,159 @@
 
 #include <vector>
 #include "PGA/PGA_3D.h"
+#include "PGA/image_lib.h"
 
 using std::vector;
 
+struct MaterialId {
+public:
+    explicit MaterialId(uint materialId) : materialId(materialId) {}
+    MaterialId() = default;
+    uint materialId;
+};
+
+struct Material {
+    /// ambient color
+    Color ambient;
+
+    /// diffuse color
+    Color diffuse;
+
+    /// specular color
+    Color spectral;
+
+    /// phong cosine power
+    uint ns = 5;
+
+    /// transmissive color
+    Color transmissive;
+
+    /// index of refraction
+    uint ior = 1;
+
+    friend std::istream &operator>>(std::istream &input, Material &res) {
+        input >> res.ambient >> res.diffuse >> res.spectral >> res.ns >> res.transmissive >> res.ior;
+        return input;
+    }
+
+
+};
 
 struct Resolution {
     float width, height;
+
+    friend std::istream &operator>>(std::istream &input, Resolution &res) {
+        float w, h;
+        input >> w >> h;
+        res = {w, h};
+        return input;
+    }
 };
 
 
 /**
  * Indexes of vertices
  */
-struct Triangle {
+struct Triangle: MaterialId {
     size_t v1{}, v2{}, v3{};
+
+    Triangle(size_t v1, size_t v2, size_t v3) : MaterialId(), v1(v1), v2(v2), v3(v3) {}
+
+    Triangle() = default;
+
+
+    friend std::istream &operator>>(std::istream &input, Triangle &res) {
+        size_t a, b, c;
+        input >> a >> b >> c;
+        res = {a, b, c};
+        return input;
+    }
+
 };
 
-struct NormalTriangle {
+struct NormalTriangle : MaterialId {
     Triangle triangle;
     size_t n1{}, n2{}, n3{};
+
+    NormalTriangle(const Triangle &triangle, size_t n1, size_t n2, size_t n3) : MaterialId(0), triangle(triangle),
+                                                                                n1(n1), n2(n2),
+                                                                                n3(n3) {
+    }
+
+    NormalTriangle() = default;
+
+
+    friend std::istream &operator>>(std::istream &input, NormalTriangle &res) {
+        Triangle tr;
+        input >> tr;
+        size_t a, b, c;
+        input >> a >> b >> c;
+        res = {tr, a, b, c};
+        return input;
+    }
+
 };
 
-struct Sphere {
+struct Sphere : MaterialId {
+
+    Sphere(float x, float y, float z, float r): MaterialId(), x(x), y(y), z(z), r(r) {}
+
+    Sphere() = default;
+
     float x, y, z, r;
-};
 
-struct Background {
-    uint r, g, b;
-};
-
-struct Material {
-    /// ambient color
-    uint ar{}, ag{}, ab{};
-
-    /// diffuse color
-    uint dr = 1, dg = 1, db = 1;
-
-    /// specular color
-    uint sr{}, sg{}, sb{};
-
-    /// phong cosine power
-    uint ns = 5;
-
-    /// transmissive color
-    uint tr{}, tg{}, tb{};
-
-    /// index of refraction
-    uint ior = 1;
+    friend std::istream &operator>>(std::istream &input, Sphere &res) {
+        float a, b, c, d;
+        input >> a >> b >> c >> d;
+        res = {a, b, c, d};
+        return input;
+    }
 
 };
 
 struct DirectionalLight {
-    /// color
-    uint r, g, b;
+    Color color;
+    Dir3D direction;
 
-    /// direction
-    float x, y, z;
+    friend std::istream &operator>>(std::istream &input, DirectionalLight &res) {
+        input >> res.color >> res.direction;
+        return input;
+    }
+
 };
 
 struct PointLight {
     /// color
-    uint r, g, b;
+    Color color;
 
     /// direction
-    float x, y, z;
+    Dir3D direction;
+
+    friend std::istream &operator>>(std::istream &input, PointLight &res) {
+        input >> res.color >> res.direction;
+        return input;
+    }
+
 };
 
 struct SpotLight {
     /// color
-    uint r, g, b;
+    Color color;
 
     /// location
-    float px, py, pz;
+    Point3D location;
 
     /// direction
-    float dx, dy, z;
+    Dir3D direction;
 
     /// how the light falls off
     float angle1, angle2;
+
+    friend std::istream &operator>>(std::istream &input, SpotLight &res) {
+
+        return input;
+    }
+
 };
 
 struct AmbientLight {
@@ -91,25 +166,25 @@ struct InputData {
     Point3D cameraPos = {0, 0, 0};
     Dir3D cameraFwd = {0, 0, 1};
     Dir3D cameraUp = {0, 1, 0};
-    float cameraHA = 45.0;
+    float cameraFovHA = 45.0;
     Resolution resolution = {
             .width = 640,
             .height = 480
     };
-    string outputImage = "raytraced.bmp";
-    int maxVertices = 0;
-    int maxNormals = 0;
+    std::string outputImage = "raytraced.bmp";
+    uint maxVertices = 0;
+    uint maxNormals = 0;
     vector<Point3D> vertices{};
-    vector<Point3D> normals{};
+    vector<Dir3D> normals{};
     vector<Triangle> triangles{};
     vector<NormalTriangle> normalTriangles{};
     vector<Sphere> spheres{};
-    Background background{};
+    Color background{};
     vector<Material> materials{};
     vector<DirectionalLight> directionalLights{};
     vector<PointLight> pointLights;
     vector<SpotLight> spotLights;
-    AmbientLight ambientLight = {0, 0, 0};
+    Color ambientLight = {0, 0, 0};
     uint maxDepth = 5;
 };
 

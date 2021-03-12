@@ -20,7 +20,11 @@ enum class Command {
     SPHERE,
     BACKGROUND,
     MATERIAL,
-    NORMAL_TRIANGLE
+    DIRECTIONAL_LIGHT,
+    POINT_LIGHT,
+    SPOT_LIGHT,
+    AMBIENT_LIGHT,
+    MAX_DEPTH
 };
 
 class CommandGetter {
@@ -29,26 +33,31 @@ public:
         return commands[input];
     }
 
-private:
     CommandGetter() = default;
 
+private:
     std::unordered_map<std::string, Command> commands{
-            {"camera_pos",      Command::CAMERA_POS},
-            {"camera_fwd",      Command::CAMERA_FWD},
-            {"camera_up_",      Command::CAMERA_UP},
-            {"camera_fov_ha",   Command::CAMERA_FOV_HA},
-            {"film_resolution", Command::FILM_RESOLUTION},
-            {"output_image",    Command::OUTPUT_IMAGE},
-            {"max_vertices",    Command::MAX_VERTICES},
-            {"max_normals",     Command::MAX_NORMALS},
-            {"vertex",          Command::VERTEX},
-            {"normal",          Command::NORMAL},
-            {"triangle",        Command::TRIANGLE},
-            {"normal_triangle", Command::NORMAL_TRIANGLE},
-            {"sphere",          Command::SPHERE},
-            {"background",      Command::BACKGROUND},
-            {"material",        Command::MATERIAL},
-            {"normal_triangle", Command::NORMAL_TRIANGLE},
+            {"camera_pos",        Command::CAMERA_POS},
+            {"camera_fwd",        Command::CAMERA_FWD},
+            {"camera_up_",        Command::CAMERA_UP},
+            {"camera_fov_ha",     Command::CAMERA_FOV_HA},
+            {"film_resolution",   Command::FILM_RESOLUTION},
+            {"output_image",      Command::OUTPUT_IMAGE},
+            {"max_vertices",      Command::MAX_VERTICES},
+            {"max_normals",       Command::MAX_NORMALS},
+            {"vertex",            Command::VERTEX},
+            {"normal",            Command::NORMAL},
+            {"triangle",          Command::TRIANGLE},
+            {"normal_triangle",   Command::NORMAL_TRIANGLE},
+            {"sphere",            Command::SPHERE},
+            {"background",        Command::BACKGROUND},
+            {"material",          Command::MATERIAL},
+            {"normal_triangle",   Command::NORMAL_TRIANGLE},
+            {"directional_light", Command::DIRECTIONAL_LIGHT},
+            {"point_light",       Command::POINT_LIGHT},
+            {"spot_light",        Command::SPOT_LIGHT},
+            {"ambient_light",     Command::AMBIENT_LIGHT},
+            {"max_depth",         Command::MAX_DEPTH}
     };
 };
 

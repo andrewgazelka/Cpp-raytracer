@@ -14,20 +14,22 @@ int i = 1;
 
 InputData FileReader::readFile(const string &fileName) {
 
-    ifstream input("dasd");
+    ifstream inputStream("dasd");
 
-    InputData inputData;
+    InputData data;
 
     std::string line;
-    while (std::getline(input, line)) {
+    uint materialId = 0;
 
-        std::istringstream lineStream;
-        lineStream.str(line);
+    while (std::getline(inputStream, line)) {
+
+        std::istringstream ls;
+        ls.str(line);
 
         std::string start;
 
 
-        if (!(lineStream >> start)) { // a blank line
+        if (!(ls >> start)) { // a blank line
             continue;
         }
 
@@ -49,38 +51,96 @@ InputData FileReader::readFile(const string &fileName) {
             case Command::INVALID:
                 printf("the command %s is invalid!\n", start.c_str());
                 exit(1);
-                break;
             case Command::CAMERA_POS:
+                ls >> data.cameraPos;
                 break;
             case Command::CAMERA_FWD:
+                ls >> data.cameraFwd;
                 break;
             case Command::CAMERA_UP:
+                ls >> data.cameraUp;
                 break;
             case Command::CAMERA_FOV_HA:
+                ls >> data.cameraFovHA;
                 break;
             case Command::FILM_RESOLUTION:
+                ls >> data.resolution;
                 break;
             case Command::OUTPUT_IMAGE:
+                ls >> data.outputImage;
                 break;
             case Command::MAX_VERTICES:
+                ls >> data.maxVertices;
                 break;
             case Command::MAX_NORMALS:
+                ls >> data.maxNormals;
                 break;
-            case Command::VERTEX:
+            case Command::VERTEX: {
+                Point3D toAdd;
+                ls >> toAdd;
+                data.vertices.push_back(toAdd);
                 break;
-            case Command::NORMAL:
+            }
+            case Command::NORMAL: {
+                Dir3D toAdd;
+                ls >> toAdd;
+                data.normals.push_back(toAdd);
                 break;
-            case Command::TRIANGLE:
+            }
+            case Command::TRIANGLE: {
+                Triangle toAdd;
+                ls >> toAdd;
+                toAdd.materialId = materialId;
+                data.triangles.push_back(toAdd);
                 break;
-            case Command::NORMAL_TRIANGLE:
+            }
+            case Command::NORMAL_TRIANGLE: {
+                NormalTriangle toAdd;
+                ls >> toAdd;
+                toAdd.materialId = materialId;
+                data.normalTriangles.push_back(toAdd);
                 break;
-            case Command::SPHERE:
+            }
+            case Command::SPHERE: {
+                Sphere toAdd;
+                ls >> toAdd;
+                toAdd.materialId = materialId;
+                data.spheres.push_back(toAdd);
                 break;
+            }
             case Command::BACKGROUND:
+                ls >> data.background;
                 break;
-            case Command::MATERIAL:
+            case Command::MATERIAL: {
+                Material mat;
+                ls >> mat;
+                data.materials.push_back(mat);
+                materialId++;
                 break;
-            case Command::NORMAL_TRIANGLE:
+            }
+            case Command::DIRECTIONAL_LIGHT: {
+                DirectionalLight dl;
+                ls >> dl;
+                data.directionalLights.push_back(dl);
+                break;
+            }
+            case Command::POINT_LIGHT: {
+                PointLight pl;
+                ls >> pl;
+                data.pointLights.push_back(pl);
+                break;
+            }
+            case Command::SPOT_LIGHT: {
+                SpotLight sl;
+                ls >> sl;
+                data.spotLights.push_back(sl);
+                break;
+            }
+            case Command::AMBIENT_LIGHT:
+                ls >> data.ambientLight;
+                break;
+            case Command::MAX_DEPTH:
+                ls >> data.maxDepth;
                 break;
         }
 
