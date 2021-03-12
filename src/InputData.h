@@ -26,8 +26,8 @@ struct Material {
     /// specular color
     Color spectral;
 
-    /// phong cosine power
-    uint ns = 5;
+    /// phong cosine power = ns
+    uint phong = 5;
 
     /// transmissive color
     Color transmissive;
@@ -36,7 +36,7 @@ struct Material {
     uint ior = 1;
 
     inline friend std::istream &operator>>(std::istream &input, Material &res) {
-        input >> res.ambient >> res.diffuse >> res.spectral >> res.ns >> res.transmissive >> res.ior;
+        input >> res.ambient >> res.diffuse >> res.spectral >> res.phong >> res.transmissive >> res.ior;
         return input;
     }
 
@@ -105,15 +105,15 @@ struct NormalTriangle : MaterialId {
 
 struct Sphere : MaterialId {
 
-    Sphere(const Point3D &pos, float radius) : MaterialId(), pos(pos), radius(radius) {}
+    Sphere(const Point3D &pos, float radius) : MaterialId(), center(pos), radius(radius) {}
 
     Sphere() = default;
 
-    Point3D pos;
+    Point3D center;
     float radius;
 
     inline friend std::istream &operator>>(std::istream &input, Sphere &res) {
-        input >> res.pos >> res.radius;
+        input >> res.center >> res.radius;
         return input;
     }
 

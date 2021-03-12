@@ -21,7 +21,7 @@ struct Color {
         return input;
     }
 
-    Color operator+(const Color& other) const{
+    Color operator+(const Color &other) const {
         return {r + other.r, g + other.g, b + other.b};
     }
 
@@ -40,10 +40,27 @@ struct Color {
         }
     }
 
-    float & operator[](char i) {
+    [[nodiscard]] inline const float &channel(char value) const {
+        switch (value) {
+            case 0:
+                return r;
+            case 1:
+                return g;
+            case 2:
+                return b;
+            default:
+                printf("invalid channel\n");
+                exit(1);
+        }
+    }
+
+    float &operator[](char i) {
         return this->channel(i);
     }
 
+    const float &operator[](char i) const {
+        return this->channel(i);
+    }
 
 
 };

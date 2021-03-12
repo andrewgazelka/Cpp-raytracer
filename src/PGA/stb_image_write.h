@@ -1312,12 +1312,12 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
       int bitBuf=0, bitCnt=0;
       // comp == 2 is grey+alpha (alpha is ignored)
       int ofsG = comp > 2 ? 1 : 0, ofsB = comp > 2 ? 2 : 0;
-      int x, y, pos;
+      int x, y, center;
       for(y = 0; y < height; y += 8) {
          for(x = 0; x < width; x += 8) {
             float YDU[64], UDU[64], VDU[64];
-            for(row = y, pos = 0; row < y+8; ++row) {
-               for(col = x; col < x+8; ++col, ++pos) {
+            for(row = y, center = 0; row < y+8; ++row) {
+               for(col = x; col < x+8; ++col, ++center) {
                   int p = row*width*comp + col*comp;
                   float r, g, b;
                   if(row >= height) {
@@ -1330,9 +1330,9 @@ static int stbi_write_jpg_core(stbi__write_context *s, int width, int height, in
                   r = imageData[p+0];
                   g = imageData[p+ofsG];
                   b = imageData[p+ofsB];
-                  YDU[pos]=+0.29900f*r+0.58700f*g+0.11400f*b-128;
-                  UDU[pos]=-0.16874f*r-0.33126f*g+0.50000f*b;
-                  VDU[pos]=+0.50000f*r-0.41869f*g-0.08131f*b;
+                  YDU[center]=+0.29900f*r+0.58700f*g+0.11400f*b-128;
+                  UDU[center]=-0.16874f*r-0.33126f*g+0.50000f*b;
+                  VDU[center]=+0.50000f*r-0.41869f*g-0.08131f*b;
                }
             }
 

@@ -2,6 +2,7 @@
 
 
 #include "InputData.h"
+#include "utils.h"
 #include <optional>
 
 #define Kc 1.0f // standard term
@@ -15,13 +16,15 @@ class Scene {
 public:
     explicit Scene(const InputData &inputData);
 
-    Color lightingOf(const MaterialId &material, const Point3D &hitLocation, const Dir3D &viewDirection, const vector<Sphere> &spheres){
-        const auto pointLighting = pointLightingOf(material, hitLocation, viewDirection, spheres);
-        const auto ambientLighting = inputData.ambientLight;
+    Color lightingOf(const Sphere &sphere, const Point3D &hitLocation, const Dir3D &viewDirection,
+                     const vector<Sphere> &spheres) {
+        let pointLighting = lightingOfSphere(sphere, hitLocation, viewDirection, spheres);
+        let ambientLighting = inputData.ambientLight;
         return pointLighting + ambientLighting;
     }
 
-    bool anyIntersect(Point3D rayStart, Line3D rayLine, const vector<Sphere> &spheres, float epsilon = 0.01) {
+    [[nodiscard]] bool
+    anyIntersect(Point3D rayStart, Line3D rayLine, const vector<Sphere> &spheres, float epsilon = 0.01) const {
         for (const auto &sphere: spheres) {
             const auto interesect = raySphereIntersect(rayStart, rayLine, sphere, epsilon);
             if (interesect) {
@@ -31,9 +34,10 @@ public:
         return false;
     }
 
-    std::optional<float>
+
+    [[nodiscard]] std::optional<float>
     raySphereIntersect(Point3D rayStart, Line3D rayLine, const Sphere &sphere, float epsilon = 0.01) const {
-        const auto sphereCenter = sphere.pos;
+        const auto sphereCenter = sphere.center;
         const auto sphereRadius = sphere.radius;
         Dir3D dir = rayLine.dir();
         float a = dot(dir, dir);
@@ -72,38 +76,55 @@ private:
      * @param viewDirection
      * @return
      */
-    [[nodiscard]] Color pointLightingOf(const MaterialId &material, const Point3D &hitLocation, const Dir3D &viewDirection,
-                                        const vector<Sphere> &spheres) {
+    [[nodiscard]] Color
+    lightingOfSphere(const Sphere &sphere, const Point3D &hitLocation, const Dir3D &viewDirection,
+                     const vector<Sphere> &spheres) {
 
-        const auto mat = inputData.materials[material.materialId];
-        auto diffuseCoefficient = mat.diffuse;
+        let material = inputData.materials[sphere.materialId];
+        let sphereCenter = sphere.center;
 
+        // normal to the sphere surface. It points into the sphere so angles are preserved
+        const Dir3D normalUnnormalized = (sphereCenter - hitLocation);
+        const Dir3D normal = normalUnnormalized.normalized();
 
         Color dColor;
 
-        for (auto pointLight : inputData.pointLights) {
+        for (auto pointLight : inputData.pointLights) { // TODO: change to const auto
 
-            const Dir3D dVec = pointLight.location - hitLocation;
-            const auto d = dVec.magnitude();
-            const auto directionNormalized = dVec * (1 / d);
+            let dLight = pointLight.location - hitLocation;
+            let distanceToLight = dLight.magnitude();
 
-            const auto rayLine = vee(hitLocation, directionNormalized).normalized();
+            let lightDirection = dLight * (1 / distanceToLight);
+
+            // reflection of light over normal
+            const Dir3D reflectionOfLight = lightDirection - 2 * (dot(lightDirection, normal) * normal);
+
+            let rayLine = vee(hitLocation, lightDirection).normalized();
 
             // continue because there is an intersection
             if (anyIntersect(hitLocation, rayLine, spheres)) continue;
 
-            const auto angle = dot(directionNormalized, viewDirection);
+
+            let reflectCos = std::max({0.0f, dot(reflectionOfLight, viewDirection)});
+            let lightCos = std::max({0.0f, dot(normal * (-1), lightDirection)});
+            let phongCoeff = powf(reflectCos, material.phong);
 
             for (char i = 0; i < CHANNELS; ++i) {
 
-                auto coeff = diffuseCoefficient[i];
-                const auto initialIntensity = pointLight.color[i];
+                // diffuse coefficient
+                let kD = material.diffuse[i];
+                let kS = material.spectral[i];
 
+                let lightIntensity = pointLight.color[i];
+                let loseScalar = (Kc + K1 * distanceToLight + Kq * distanceToLight * distanceToLight);
 
-                const auto loseScalar = (Kc + K1 * d + Kq * d * d);
-                const auto I_L = initialIntensity / loseScalar;
+                // intensity of the light at that point
+                let I_L = lightIntensity / loseScalar;
 
-                dColor[i] += coeff * I_L;
+                let dDiffuse = kD * I_L * lightCos;
+                let dSpecularity = kS * reflectCos * phongCoeff * I_L;
+
+                dColor[i] += (dDiffuse + dSpecularity);
             }
         }
         return dColor;

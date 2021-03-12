@@ -194,7 +194,7 @@ struct Dir3D {
 
     Dir3D(MultiVector mv) : x(mv.wzy), y(mv.wxz), z(mv.wyx) {}
 
-    operator MultiVector() { return MultiVector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, z, y, x, 0, 0); }
+    operator MultiVector() const { return MultiVector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, z, y, x, 0, 0); }
 
     Point3D operator+(Point3D rhs);
 
@@ -408,7 +408,7 @@ inline Dir3D operator*(Dir3D d, float f) {
     return Dir3D(d.x * f, d.y * f, d.z * f);
 }
 
-inline Dir3D operator*(float f, Dir3D d) {
+inline Dir3D operator*(float f, const Dir3D& d) {
     return Dir3D(d.x * f, d.y * f, d.z * f);
 }
 
