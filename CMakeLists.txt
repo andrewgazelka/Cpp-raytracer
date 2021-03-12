@@ -7,8 +7,8 @@ message(STATUS "Boost version: ${Boost_VERSION}")
 set(CMAKE_CXX_STANDARD 14)
 
 
-include_directories(src)
-include_directories(src/PGA)
+#include_directories(src)
+#include_directories(src/PGA)
 
 add_executable(proj3a
         src/PGA/image_lib.h
@@ -19,7 +19,10 @@ add_executable(proj3a
         src/PGA/stb_image.h
         src/PGA/stb_image_write.h
         src/FileReader.cpp
-        src/FileReader.h)
+        src/FileReader.h
+        src/commands.h
+        src/InputData.h
+        )
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)
