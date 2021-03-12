@@ -21,6 +21,10 @@ InputData FileReader::readFile(const string &fileName) {
 
     InputData data;
 
+    // add default material
+    Material defaultMat;
+    data.materials.push_back(defaultMat);
+
     std::string line;
     uint materialId = 0;
 

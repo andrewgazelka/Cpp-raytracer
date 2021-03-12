@@ -33,7 +33,7 @@ struct MultiVector{
   float wyx, wxz, wzy, xyz; //TriVector Components
   float wxyz; //Pseudoscalar
 
-  MultiVector times(MultiVector rhs){
+  MultiVector times(MultiVector rhs) const{
     float _s = s*rhs.s + x*rhs.x + y*rhs.y + z*rhs.z - xy*rhs.xy - zx*rhs.zx - yz*rhs.yz - xyz*rhs.xyz;
     float _w = s*rhs.w + w*rhs.s - x*rhs.wx - y*rhs.wy - z*rhs.wz + wx*rhs.x + wy*rhs.y + wz*rhs.z + xy*rhs.wyx +
                zx*rhs.wxz + yz*rhs.wzy + wyx*rhs.xy + wxz*rhs.zx + wzy*rhs.yz + xyz*rhs.wxyz - wxyz*rhs.wzy;
@@ -55,7 +55,7 @@ struct MultiVector{
     return MultiVector(_s, _w, _x, _y, _z, _wx, _wy, _wz, _xy, _zx, _yz, _wyx, _wxz, _wzy, _xyz, _wxyz);
   }
 
-  MultiVector add(MultiVector rhs){
+  MultiVector add(MultiVector rhs) const{
     float _s = s+rhs.s;
     float _w = w+rhs.w;
     float _x = x+rhs.x;
@@ -95,15 +95,15 @@ struct MultiVector{
     return MultiVector(_s, _w, _x, _y, _z, _wx, _wy, _wz, _xy, _zx, _yz, _wyx, _wxz, _wzy, _xyz, _wxyz);
   }
 
-  MultiVector mul(float f) const{
+  [[nodiscard]] MultiVector mul(float f) const{
     return MultiVector(s*f, w*f, x*f, y*f, z*f, wx*f, wy*f, wz*f, xy*f, zx*f, yz*f, wyx*f, wxz*f, wzy*f, xyz*f, wxyz*f);
   }
 
-  MultiVector div(float f) const{
+  [[nodiscard]] MultiVector div(float f) const{
     return MultiVector(s/f, w/f, x/f, y/f, z/f, wx/f, wy/f, wz/f, xy/f, zx/f, yz/f, wyx/f, wxz/f, wzy/f, xyz/f, wxyz/f);
   }
 
-  MultiVector wedge(MultiVector rhs) const{
+  [[nodiscard]] MultiVector wedge(MultiVector rhs) const{
     float _s = s*rhs.s;
     float _w = s*rhs.w + w*rhs.s;
     float _x = s*rhs.x + x*rhs.s;
@@ -177,11 +177,11 @@ struct MultiVector{
   }
 
   //reverse(v): v*reverse(v) = |v|^2
-  MultiVector reverse(){
+  MultiVector reverse() const{
     return MultiVector(s, w, x, y, z, -wx, -wy, -wz, -xy, -zx, -yz, -wyx, -wxz, -wzy, -xyz, wxyz);
   }
 
-  float magnitude(){
+  float magnitude() const{
     return std::sqrt(this->times(reverse()).s);
   }
 
@@ -255,7 +255,7 @@ inline MultiVector operator+(MultiVector lhs, MultiVector rhs){
   return lhs.add(rhs);
 }
 
-inline MultiVector operator-(const MultiVector lhs, const MultiVector rhs){
+inline MultiVector operator-(const MultiVector& lhs, const MultiVector& rhs){
   return lhs.sub(rhs);
 }
 

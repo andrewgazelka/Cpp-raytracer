@@ -145,7 +145,7 @@ struct Point3D {
 
     Point3D(MultiVector mv) : x(mv.wzy / mv.xyz), y(mv.wxz / mv.xyz), z(mv.wyx / mv.xyz) {};
 
-    operator MultiVector() { return MultiVector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, z, y, x, 1, 0); };
+    operator MultiVector() const { return MultiVector(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, z, y, x, 1, 0); };
 
     Dir3D operator-(Point3D rhs);
 

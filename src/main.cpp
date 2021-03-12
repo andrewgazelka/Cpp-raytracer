@@ -37,37 +37,6 @@
 using std::cout;
 using std::endl;
 
-
-std::optional<float>
-raySphereIntersect(Point3D rayStart, Line3D rayLine, const Sphere &sphere, float epsilon = 0.01) {
-    const auto sphereCenter = sphere.pos;
-    const auto sphereRadius = sphere.radius;
-    Dir3D dir = rayLine.dir();
-    float a = dot(dir, dir);
-    Dir3D toStart = (rayStart - sphereCenter);
-    float b = 2 * dot(dir, toStart);
-    float c = dot(toStart, toStart) - sphereRadius * sphereRadius;
-    float disriminant = b * b - 4 * a * c;
-    if (disriminant < 0) return {};
-    else {
-        float t0 = (-b + sqrt(disriminant)) / (2 * a);
-        float t1 = (-b - sqrt(disriminant)) / (2 * a);
-        if (t0 > epsilon || t1 > epsilon) {
-            float minT;
-            if (t0 <= epsilon) {
-                minT = t1;
-            } else if (t1 <= epsilon) {
-                minT = t0;
-            } else {
-                minT = std::min({t0, t1});
-            }
-
-            return minT;
-        }
-    }
-    return {};
-}
-
 //
 //bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
 //    Point3D projPoint = dot(rayLine, sphereCenter) *
@@ -132,7 +101,7 @@ int main(int argc, char **argv) {
             std::optional<Sphere> closest = {};
             float closestT = std::numeric_limits<float>::max();
             for (const auto sphere: data.spheres) {
-                auto hit = raySphereIntersect(eye, rayLine, sphere);
+                auto hit = scene.raySphereIntersect(eye, rayLine, sphere);
                 if (hit) {
                     auto value = hit.value();
                     if(value < closestT){
@@ -144,7 +113,7 @@ int main(int argc, char **argv) {
             if (closest) {
                 const auto sphere = closest.value();
                 const auto pointHit = eye + (rayLine.dir() * closestT);
-                const auto lighting = scene.pointLightingOf(sphere, pointHit, rayDir);
+                const auto lighting = scene.pointLightingOf(sphere, pointHit, rayDir, data.spheres);
                 outputImg.setPixel(i, j, lighting);
             }
 
