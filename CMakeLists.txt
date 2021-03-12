@@ -4,8 +4,9 @@ project(proj3a)
 find_package(Boost 1.50 REQUIRED COMPONENTS filesystem)
 message(STATUS "Boost version: ${Boost_VERSION}")
 
-set(CMAKE_CXX_STANDARD 14)
+find_package(Catch2 REQUIRED)
 
+set(CMAKE_CXX_STANDARD 14)
 
 #include_directories(src)
 #include_directories(src/PGA)
@@ -21,8 +22,8 @@ add_executable(proj3a
         src/FileReader.cpp
         src/FileReader.h
         src/commands.h
-        src/InputData.h
-        src/Color.cpp src/Color.h)
+        src/InputData.h)
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)
+target_link_libraries(proj3a PRIVATE Catch2::Catch2)
