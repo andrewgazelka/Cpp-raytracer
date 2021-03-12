@@ -10,7 +10,9 @@ using std::vector;
 struct MaterialId {
 public:
     explicit MaterialId(uint materialId) : materialId(materialId) {}
+
     MaterialId() = default;
+
     uint materialId;
 };
 
@@ -42,10 +44,10 @@ struct Material {
 };
 
 struct Resolution {
-    float width, height;
+    uint width, height;
 
     inline friend std::istream &operator>>(std::istream &input, Resolution &res) {
-        float w, h;
+        uint w, h;
         input >> w >> h;
         res = {w, h};
         return input;
@@ -61,7 +63,7 @@ struct Resolution {
 /**
  * Indexes of vertices
  */
-struct Triangle: MaterialId {
+struct Triangle : MaterialId {
     size_t v1{}, v2{}, v3{};
 
     Triangle(size_t v1, size_t v2, size_t v3) : MaterialId(), v1(v1), v2(v2), v3(v3) {}
@@ -103,16 +105,15 @@ struct NormalTriangle : MaterialId {
 
 struct Sphere : MaterialId {
 
-    Sphere(float x, float y, float z, float r): MaterialId(), x(x), y(y), z(z), r(r) {}
+    Sphere(const Point3D &pos, float radius) : MaterialId(), pos(pos), radius(radius) {}
 
     Sphere() = default;
 
-    float x, y, z, r;
+    Point3D pos;
+    float radius;
 
     inline friend std::istream &operator>>(std::istream &input, Sphere &res) {
-        float a, b, c, d;
-        input >> a >> b >> c >> d;
-        res = {a, b, c, d};
+        input >> res.pos >> res.radius;
         return input;
     }
 
@@ -171,8 +172,9 @@ struct AmbientLight {
 
 struct InputData {
     Point3D cameraPos = {0, 0, 0};
-    Dir3D cameraFwd = {0, 0, 1};
+    Dir3D cameraForward = {0, 0, 1};
     Dir3D cameraUp = {0, 1, 0};
+    Dir3D cameraRight = {};
     float cameraFovHA = 45.0;
     Resolution resolution = {
             .width = 640,

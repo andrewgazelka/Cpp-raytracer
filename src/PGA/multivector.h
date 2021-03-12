@@ -17,13 +17,13 @@ inline std::string roundToString(float num, int p=3){
   std::string num_text = std::to_string(num+0.5*powf(10,-(p+1)));
   return num_text.substr(0, num_text.find(".")+(p+1));
 }
-  
+
 //Multivector Struct
 struct MultiVector{
   //Constructor
   MultiVector(float s=0, float w=0, float x=0, float y=0, float z=0,
-              float wx=0, float wy=0, float wz=0, float xy=0, float zx=0, float yz=0, 
-              float wyx=0, float wxz=0, float wzy=0, float xyz=0, float wxyz=0) : 
+              float wx=0, float wy=0, float wz=0, float xy=0, float zx=0, float yz=0,
+              float wyx=0, float wxz=0, float wzy=0, float xyz=0, float wxyz=0) :
   s(s), w(w), x(x), y(y), z(z), wx(wx), wy(wy), wz(wz), xy(xy), zx(zx), yz(yz),
   wyx(wyx), wxz(wxz), wzy(wzy), xyz(xyz), wxyz(wxyz) {}
 
@@ -75,7 +75,7 @@ struct MultiVector{
     return MultiVector(_s, _w, _x, _y, _z, _wx, _wy, _wz, _xy, _zx, _yz, _wyx, _wxz, _wzy, _xyz, _wxyz);
   }
 
-  MultiVector sub(MultiVector rhs){
+  [[nodiscard]] MultiVector sub(MultiVector rhs) const{
     float _s = s-rhs.s;
     float _w = w-rhs.w;
     float _x = x-rhs.x;
@@ -95,15 +95,15 @@ struct MultiVector{
     return MultiVector(_s, _w, _x, _y, _z, _wx, _wy, _wz, _xy, _zx, _yz, _wyx, _wxz, _wzy, _xyz, _wxyz);
   }
 
-  MultiVector mul(float f){
+  MultiVector mul(float f) const{
     return MultiVector(s*f, w*f, x*f, y*f, z*f, wx*f, wy*f, wz*f, xy*f, zx*f, yz*f, wyx*f, wxz*f, wzy*f, xyz*f, wxyz*f);
   }
 
-  MultiVector div(float f){
+  MultiVector div(float f) const{
     return MultiVector(s/f, w/f, x/f, y/f, z/f, wx/f, wy/f, wz/f, xy/f, zx/f, yz/f, wyx/f, wxz/f, wzy/f, xyz/f, wxyz/f);
   }
 
-  MultiVector wedge(MultiVector rhs){
+  MultiVector wedge(MultiVector rhs) const{
     float _s = s*rhs.s;
     float _w = s*rhs.w + w*rhs.s;
     float _x = s*rhs.x + x*rhs.s;
@@ -163,7 +163,7 @@ struct MultiVector{
     float _wxz = s*rhs.wxz + y*rhs.wxyz + wxz*rhs.s;
     float _wzy = s*rhs.wzy + x*rhs.wxyz + wzy*rhs.s;
     float _xyz = s*rhs.xyz + xyz*rhs.s;
-    float _wxyz = s*rhs.wxyz + rhs.wxyz*rhs.s; 
+    float _wxyz = s*rhs.wxyz + rhs.wxyz*rhs.s;
     return MultiVector(_s, _w, _x, _y, _z, _wx, _wy, _wz, _xy, _zx, _yz, _wyx, _wxz, _wzy, _xyz, _wxyz);
   }
 
@@ -255,11 +255,11 @@ inline MultiVector operator+(MultiVector lhs, MultiVector rhs){
   return lhs.add(rhs);
 }
 
-inline MultiVector operator-(MultiVector lhs, MultiVector rhs){
+inline MultiVector operator-(const MultiVector lhs, const MultiVector rhs){
   return lhs.sub(rhs);
 }
 
-inline MultiVector operator/(MultiVector lhs, float f){
+inline MultiVector operator/(const MultiVector lhs, const float f){
   return lhs.div(f);
 }
 

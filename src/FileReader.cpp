@@ -9,14 +9,12 @@ using std::ifstream;
 using boost::algorithm::to_lower;
 
 
-int i = 1;
-
 InputData FileReader::readFile(const string &fileName) {
 
     ifstream inputStream(fileName);
 
     // is empty
-    if(inputStream.peek() == std::ifstream::traits_type::eof()){
+    if (inputStream.peek() == std::ifstream::traits_type::eof()) {
         printf("exit or non-existant file %s\n", fileName.c_str());
         exit(1);
     }
@@ -26,6 +24,7 @@ InputData FileReader::readFile(const string &fileName) {
     std::string line;
     uint materialId = 0;
 
+    // READ DATA
     while (std::getline(inputStream, line)) {
 
         std::istringstream ls;
@@ -47,7 +46,7 @@ InputData FileReader::readFile(const string &fileName) {
             exit(1);
         }
 
-        // remove :
+        // remove ":"
         start.pop_back();
 
         to_lower(start); // makes sure lowercase
@@ -63,7 +62,7 @@ InputData FileReader::readFile(const string &fileName) {
                 ls >> data.cameraPos;
                 break;
             case Command::CAMERA_FWD:
-                ls >> data.cameraFwd;
+                ls >> data.cameraForward;
                 break;
             case Command::CAMERA_UP:
                 ls >> data.cameraUp;
@@ -153,5 +152,20 @@ InputData FileReader::readFile(const string &fileName) {
         }
 
     }
+
+
+    // NORMALIZE DATA
+    data.cameraUp = data.cameraUp.normalized();
+    data.cameraForward = data.cameraForward.normalized();
+
+    auto right = cross(data.cameraUp, data.cameraForward);
+
+    if (right.magnitudeSqr() == 0.0) {
+        printf("forward and up are parallel! Exiting.\n");
+        exit(1);
+    }
+
+    data.cameraRight = right.normalized();
+
     return data;
 }

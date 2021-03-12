@@ -19,7 +19,6 @@ add_executable(proj3a
         src/PGA/multivector.h
         src/PGA/parse_pga.h
         src/PGA/PGA_3D.h
-        src/PGA/rayTrace_pga.cpp
         src/PGA/stb_image.h
         src/PGA/stb_image_write.h
         src/FileReader.cpp

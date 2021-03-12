@@ -209,15 +209,15 @@ struct Dir3D {
         return input;
     }
 
-    float magnitude() {
+    [[nodiscard]] float magnitude() const {
         return sqrt(x * x + y * y + z * z);
     }
 
-    float magnitudeSqr() {
+    [[nodiscard]] float magnitudeSqr() const {
         return x * x + y * y + z * z;
     }
 
-    Dir3D normalized() {
+    Dir3D normalized() const {
         float mag = magnitude();
         return Dir3D(x / mag, y / mag, z / mag);
     }
@@ -229,7 +229,7 @@ struct Dir3D {
     }
 
 
-    void print(const char *title = "") {
+    void print(const char *title = "") const {
         printf("%s - %s\n", title, std::string(*this).c_str());
     }
 };
