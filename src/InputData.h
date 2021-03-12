@@ -32,7 +32,7 @@ struct Material {
     /// index of refraction
     uint ior = 1;
 
-    friend std::istream &operator>>(std::istream &input, Material &res) {
+    inline friend std::istream &operator>>(std::istream &input, Material &res) {
         input >> res.ambient >> res.diffuse >> res.spectral >> res.ns >> res.transmissive >> res.ior;
         return input;
     }
@@ -43,7 +43,7 @@ struct Material {
 struct Resolution {
     float width, height;
 
-    friend std::istream &operator>>(std::istream &input, Resolution &res) {
+    inline friend std::istream &operator>>(std::istream &input, Resolution &res) {
         float w, h;
         input >> w >> h;
         res = {w, h};
@@ -63,7 +63,7 @@ struct Triangle: MaterialId {
     Triangle() = default;
 
 
-    friend std::istream &operator>>(std::istream &input, Triangle &res) {
+    inline friend std::istream &operator>>(std::istream &input, Triangle &res) {
         size_t a, b, c;
         input >> a >> b >> c;
         res = {a, b, c};
@@ -84,7 +84,7 @@ struct NormalTriangle : MaterialId {
     NormalTriangle() = default;
 
 
-    friend std::istream &operator>>(std::istream &input, NormalTriangle &res) {
+    inline friend std::istream &operator>>(std::istream &input, NormalTriangle &res) {
         Triangle tr;
         input >> tr;
         size_t a, b, c;
@@ -103,7 +103,7 @@ struct Sphere : MaterialId {
 
     float x, y, z, r;
 
-    friend std::istream &operator>>(std::istream &input, Sphere &res) {
+    inline friend std::istream &operator>>(std::istream &input, Sphere &res) {
         float a, b, c, d;
         input >> a >> b >> c >> d;
         res = {a, b, c, d};
@@ -116,7 +116,7 @@ struct DirectionalLight {
     Color color;
     Dir3D direction;
 
-    friend std::istream &operator>>(std::istream &input, DirectionalLight &res) {
+    inline friend std::istream &operator>>(std::istream &input, DirectionalLight &res) {
         input >> res.color >> res.direction;
         return input;
     }
@@ -130,7 +130,7 @@ struct PointLight {
     /// direction
     Dir3D direction;
 
-    friend std::istream &operator>>(std::istream &input, PointLight &res) {
+    inline friend std::istream &operator>>(std::istream &input, PointLight &res) {
         input >> res.color >> res.direction;
         return input;
     }
@@ -150,7 +150,7 @@ struct SpotLight {
     /// how the light falls off
     float angle1, angle2;
 
-    friend std::istream &operator>>(std::istream &input, SpotLight &res) {
+    inline friend std::istream &operator>>(std::istream &input, SpotLight &res) {
 
         return input;
     }

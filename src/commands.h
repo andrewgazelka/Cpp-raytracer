@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 
-
 enum class Command {
     INVALID, // since this is the default
     CAMERA_POS,
@@ -61,6 +60,4 @@ private:
     };
 };
 
-CommandGetter Commands = CommandGetter()
-
-
+CommandGetter Commands = CommandGetter();

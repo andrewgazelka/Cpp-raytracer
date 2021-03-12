@@ -25,7 +25,7 @@ add_executable(proj3a
         src/FileReader.cpp
         src/FileReader.h
         src/commands.h
-        src/InputData.h)
+        src/InputData.h src/main.cpp)
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)

@@ -14,7 +14,7 @@ struct Color {
 
     Color() : r(0), g(0), b(0) {}
 
-    friend std::istream &operator>>(std::istream &input, Color &res) {
+    inline friend std::istream &operator>>(std::istream &input, Color &res) {
         float a, b, c;
         input >> a >> b >> c;
         res = {a, b, c};

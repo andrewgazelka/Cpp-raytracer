@@ -145,9 +145,5 @@ InputData FileReader::readFile(const string &fileName) {
         }
 
     }
-}
-
-
-int main() {
-    printf("hi");
+    return data;
 }
