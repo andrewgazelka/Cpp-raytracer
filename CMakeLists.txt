@@ -17,14 +17,13 @@ include_directories(src/PGA)
 add_executable(proj3a
         src/PGA/image_lib.h
         src/PGA/multivector.h
-        src/PGA/parse_pga.h
         src/PGA/PGA_3D.h
         src/PGA/stb_image.h
         src/PGA/stb_image_write.h
         src/FileReader.cpp
         src/FileReader.h
         src/commands.h
-        src/InputData.h src/main.cpp)
+        src/InputData.h src/main.cpp src/Scene.cpp src/Scene.h)
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)

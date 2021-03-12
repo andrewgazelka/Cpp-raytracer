@@ -135,10 +135,10 @@ struct PointLight {
     Color color;
 
     /// direction
-    Dir3D direction;
+    Point3D location;
 
     inline friend std::istream &operator>>(std::istream &input, PointLight &res) {
-        input >> res.color >> res.direction;
+        input >> res.color >> res.location;
         return input;
     }
 

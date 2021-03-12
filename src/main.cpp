@@ -28,49 +28,69 @@
 //High resolution timer
 #include <chrono>
 
-//Scene file parser
-#include "parse_pga.h"
 #include "FileReader.h"
+#include "Scene.h"
 
+#include <optional>
 
 using std::cout;
 using std::endl;
 
 
-bool raySphereIntersect_fast(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
+std::optional<Point3D>
+raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius, float epsilon = 0.01) {
     Dir3D dir = rayLine.dir();
     float a = dot(dir, dir);
     Dir3D toStart = (rayStart - sphereCenter);
     float b = 2 * dot(dir, toStart);
     float c = dot(toStart, toStart) - sphereRadius * sphereRadius;
-    float discr = b * b - 4 * a * c;
-    if (discr < 0) return false;
+    float disriminant = b * b - 4 * a * c;
+    if (disriminant < 0) return {};
     else {
-        float t0 = (-b + sqrt(discr)) / (2 * a);
-        float t1 = (-b - sqrt(discr)) / (2 * a);
-        if (t0 > 0 || t1 > 0) return true;
+        float t0 = (-b + sqrt(disriminant)) / (2 * a);
+        float t1 = (-b - sqrt(disriminant)) / (2 * a);
+        if (t0 > epsilon || t1 > epsilon) {
+            float minT;
+            if (t0 <= epsilon) {
+                minT = t1;
+            } else if (t1 <= epsilon) {
+                minT = t0;
+            } else {
+                minT = std::min({t0, t1});
+            }
+
+            const auto dPos = dir * minT;
+            const auto hitPos = rayStart + dPos;
+
+            return hitPos;
+        }
     }
-    return false;
+    return {};
 }
 
 //
-bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
-    Point3D projPoint = dot(rayLine, sphereCenter) *
-                        rayLine;      //Project to find closest point between circle center and line [proj(sphereCenter,rayLine);]
-    float distSqr = projPoint.distToSqr(sphereCenter);          //Point-line distance (squared)
-    float d2 = distSqr / (sphereRadius * sphereRadius);             //If distance is larger than radius, then...
-    if (d2 > 1) return false;                                   //... the ray missed the sphere
-    float w = sphereRadius * sqrt(1 -
-                                  d2);                          //Pythagorean theorem to determine dist between proj point and intersection points
-    Point3D p1 = projPoint + rayLine.dir() * w;                   //Add/subtract above distance to find hit points
-    Point3D p2 = projPoint - rayLine.dir() * w;
+//bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
+//    Point3D projPoint = dot(rayLine, sphereCenter) *
+//                        rayLine;      //Project to find closest point between circle center and line [proj(sphereCenter,rayLine);]
+//    float distSqr = projPoint.distToSqr(sphereCenter);          //Point-line distance (squared)
+//    float d2 = distSqr / (sphereRadius * sphereRadius);             //If distance is larger than radius, then...
+//    if (d2 > 1) return false;                                   //... the ray missed the sphere
+//    float w = sphereRadius * sqrt(1 -
+//                                  d2);                          //Pythagorean theorem to determine dist between proj point and intersection points
+//    Point3D p1 = projPoint + rayLine.dir() * w;                   //Add/subtract above distance to find hit points
+//    Point3D p2 = projPoint - rayLine.dir() * w;
+//
+//    if (dot((p1 - rayStart), rayLine.dir()) >= 0)
+//        return true;     //Is the first point in same direction as the ray line?
+//    if (dot((p2 - rayStart), rayLine.dir()) >= 0)
+//        return true;     //Is the second point in same direction as the ray line?
+//    return false;
+//}
 
-    if (dot((p1 - rayStart), rayLine.dir()) >= 0)
-        return true;     //Is the first point in same direction as the ray line?
-    if (dot((p2 - rayStart), rayLine.dir()) >= 0)
-        return true;     //Is the second point in same direction as the ray line?
-    return false;
-}
+/*
+ * Point light
+ * I_L = I_0 / (k_c + k_1d + k_q d^2)
+ */
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -97,9 +117,11 @@ int main(int argc, char **argv) {
 
     const float halfW = (float) imageWidth / 2.0f, halfH = (float) imageHeight / 2.0f;
     const float halfAngleVFOV = data.cameraFovHA;
-    const float d = halfH / tanf(halfAngleVFOV * (M_PI / 180.0f));
+    const float d = halfH / tanf(halfAngleVFOV * (float) (M_PI / 180.0f));
 
     Image outputImg = Image(imageWidth, imageHeight);
+
+    auto scene = Scene(data);
     auto t_start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
@@ -107,10 +129,16 @@ int main(int argc, char **argv) {
             float v = (halfH - (imgH) * (((float) j + 0.5f) / imgH));
             Point3D p = eye - d * forward + u * right + v * up;
             Dir3D rayDir = (p - eye);
-            Line3D rayLine = vee(eye, rayDir).normalized();  //Normalizing here is optional
-            bool hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
-            Color color = hit ? Color(1, 1, 1) : data.background;
-            outputImg.setPixel(i, j, color);
+            Line3D rayLine = vee(eye, rayDir).normalized();
+
+            auto hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
+            if (hit) {
+                const auto pointHit = hit.value();
+                const auto lighting = scene.pointLightingOf(sphere, pointHit, rayDir);
+                outputImg.setPixel(i, j, lighting);
+            }
+
+//            outputImg.setPixel(i, j, color);
             //outputImg.setPixel(i,j, Color(fabs(i/imgW),fabs(j/imgH),fabs(0))); //TODO: Try this, what is it visualizing?
         }
     }
