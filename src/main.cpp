@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
                 auto hit = scene.raySphereIntersect(eye, rayLine, sphere);
                 if (hit) {
                     auto value = hit.value();
-                    if(value < closestT){
+                    if (value < closestT) {
                         closest = sphere; // TODO: passing is bad?
                         closestT = value;
                     }
@@ -113,8 +113,10 @@ int main(int argc, char **argv) {
             if (closest) {
                 const auto sphere = closest.value();
                 const auto pointHit = eye + (rayLine.dir() * closestT);
-                const auto lighting = scene.pointLightingOf(sphere, pointHit, rayDir, data.spheres);
+                const auto lighting = scene.lightingOf(sphere, pointHit, rayDir, data.spheres);
                 outputImg.setPixel(i, j, lighting);
+            } else {
+                outputImg.setPixel(i, j, data.background);
             }
 
 //            outputImg.setPixel(i, j, color);

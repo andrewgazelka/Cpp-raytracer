@@ -15,49 +15,10 @@ class Scene {
 public:
     explicit Scene(const InputData &inputData);
 
-    /**
-     * Preconditions: viewDirection is normalized
-     *
-     * @param material
-     * @param hitLocation
-     * @param viewDirection
-     * @return
-     */
-    [[nodiscard]] Color pointLightingOf(const MaterialId &material, const Point3D &hitLocation, const Dir3D &viewDirection,
-                                        const vector<Sphere> &spheres) {
-
-        const auto mat = inputData.materials[material.materialId];
-        auto diffuseCoefficient = mat.diffuse;
-
-
-        Color dColor;
-
-        for (auto pointLight : inputData.pointLights) {
-
-            const Dir3D dVec = pointLight.location - hitLocation;
-            const auto d = dVec.magnitude();
-            const auto directionNormalized = dVec * (1 / d);
-
-            const auto rayLine = vee(hitLocation, directionNormalized).normalized();
-
-            // continue because there is an intersection
-            if (anyIntersect(hitLocation, rayLine, spheres)) continue;
-
-            const auto angle = dot(directionNormalized, viewDirection);
-
-            for (char i = 0; i < CHANNELS; ++i) {
-
-                auto coeff = diffuseCoefficient[i];
-                const auto initialIntensity = pointLight.color[i];
-
-
-                const auto loseScalar = (Kc + K1 * d + Kq * d * d);
-                const auto I_L = initialIntensity / loseScalar;
-
-                dColor[i] += coeff * I_L;
-            }
-        }
-        return dColor;
+    Color lightingOf(const MaterialId &material, const Point3D &hitLocation, const Dir3D &viewDirection, const vector<Sphere> &spheres){
+        const auto pointLighting = pointLightingOf(material, hitLocation, viewDirection, spheres);
+        const auto ambientLighting = inputData.ambientLight;
+        return pointLighting + ambientLighting;
     }
 
     bool anyIntersect(Point3D rayStart, Line3D rayLine, const vector<Sphere> &spheres, float epsilon = 0.01) {
@@ -102,6 +63,51 @@ public:
 
 private:
     const InputData inputData;
+
+    /**
+     * Preconditions: viewDirection is normalized
+     *
+     * @param material
+     * @param hitLocation
+     * @param viewDirection
+     * @return
+     */
+    [[nodiscard]] Color pointLightingOf(const MaterialId &material, const Point3D &hitLocation, const Dir3D &viewDirection,
+                                        const vector<Sphere> &spheres) {
+
+        const auto mat = inputData.materials[material.materialId];
+        auto diffuseCoefficient = mat.diffuse;
+
+
+        Color dColor;
+
+        for (auto pointLight : inputData.pointLights) {
+
+            const Dir3D dVec = pointLight.location - hitLocation;
+            const auto d = dVec.magnitude();
+            const auto directionNormalized = dVec * (1 / d);
+
+            const auto rayLine = vee(hitLocation, directionNormalized).normalized();
+
+            // continue because there is an intersection
+            if (anyIntersect(hitLocation, rayLine, spheres)) continue;
+
+            const auto angle = dot(directionNormalized, viewDirection);
+
+            for (char i = 0; i < CHANNELS; ++i) {
+
+                auto coeff = diffuseCoefficient[i];
+                const auto initialIntensity = pointLight.color[i];
+
+
+                const auto loseScalar = (Kc + K1 * d + Kq * d * d);
+                const auto I_L = initialIntensity / loseScalar;
+
+                dColor[i] += coeff * I_L;
+            }
+        }
+        return dColor;
+    }
 };
 
  

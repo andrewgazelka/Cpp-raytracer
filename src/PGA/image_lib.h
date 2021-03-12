@@ -21,6 +21,10 @@ struct Color {
         return input;
     }
 
+    Color operator+(const Color& other) const{
+        return {r + other.r, g + other.g, b + other.b};
+    }
+
 
     [[nodiscard]] inline float &channel(char value) {
         switch (value) {
