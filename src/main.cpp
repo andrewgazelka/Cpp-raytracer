@@ -32,13 +32,16 @@
 #include "Scene.h"
 
 #include <optional>
+#include <limits>
 
 using std::cout;
 using std::endl;
 
 
-std::optional<Point3D>
-raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius, float epsilon = 0.01) {
+std::optional<float>
+raySphereIntersect(Point3D rayStart, Line3D rayLine, const Sphere &sphere, float epsilon = 0.01) {
+    const auto sphereCenter = sphere.pos;
+    const auto sphereRadius = sphere.radius;
     Dir3D dir = rayLine.dir();
     float a = dot(dir, dir);
     Dir3D toStart = (rayStart - sphereCenter);
@@ -59,10 +62,7 @@ raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float
                 minT = std::min({t0, t1});
             }
 
-            const auto dPos = dir * minT;
-            const auto hitPos = rayStart + dPos;
-
-            return hitPos;
+            return minT;
         }
     }
     return {};
@@ -106,10 +106,7 @@ int main(int argc, char **argv) {
     auto forward = data.cameraForward;
     auto up = data.cameraUp;
     auto right = data.cameraRight;
-    auto sphere = data.spheres[0];
-    auto spherePos = sphere.pos;
 
-    auto sphereRadius = sphere.radius;
     auto imgName = data.outputImage;
 
     // float versions
@@ -123,6 +120,7 @@ int main(int argc, char **argv) {
 
     auto scene = Scene(data);
     auto t_start = std::chrono::high_resolution_clock::now();
+
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
             float u = (halfW - (imgW) * (((float) i + 0.5f) / imgW));
@@ -131,9 +129,21 @@ int main(int argc, char **argv) {
             Dir3D rayDir = (p - eye);
             Line3D rayLine = vee(eye, rayDir).normalized();
 
-            auto hit = raySphereIntersect(eye, rayLine, spherePos, sphereRadius);
-            if (hit) {
-                const auto pointHit = hit.value();
+            std::optional<Sphere> closest = {};
+            float closestT = std::numeric_limits<float>::max();
+            for (const auto sphere: data.spheres) {
+                auto hit = raySphereIntersect(eye, rayLine, sphere);
+                if (hit) {
+                    auto value = hit.value();
+                    if(value < closestT){
+                        closest = sphere; // TODO: passing is bad?
+                        closestT = value;
+                    }
+                }
+            }
+            if (closest) {
+                const auto sphere = closest.value();
+                const auto pointHit = eye + (rayLine.dir() * closestT);
                 const auto lighting = scene.pointLightingOf(sphere, pointHit, rayDir);
                 outputImg.setPixel(i, j, lighting);
             }
