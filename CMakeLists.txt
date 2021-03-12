@@ -4,12 +4,15 @@ project(proj3a)
 find_package(Boost 1.50 REQUIRED COMPONENTS filesystem)
 message(STATUS "Boost version: ${Boost_VERSION}")
 
-find_package(Catch2 REQUIRED)
+add_subdirectory(test)
+
+#include_directories(test)
 
 set(CMAKE_CXX_STANDARD 14)
 
-#include_directories(src)
-#include_directories(src/PGA)
+
+include_directories(src)
+include_directories(src/PGA)
 
 add_executable(proj3a
         src/PGA/image_lib.h
@@ -26,4 +29,4 @@ add_executable(proj3a
 
 
 target_link_libraries(proj3a PUBLIC Boost::filesystem)
-target_link_libraries(proj3a PRIVATE Catch2::Catch2)
+
