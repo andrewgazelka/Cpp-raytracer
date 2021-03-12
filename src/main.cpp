@@ -33,57 +33,43 @@
 
 #include <optional>
 #include <limits>
+#include <boost/random.hpp>
+
+#define SAMPLES 10
+#define SEED 1234
 
 using std::cout;
 using std::endl;
-
-//
-//bool raySphereIntersect(Point3D rayStart, Line3D rayLine, Point3D sphereCenter, float sphereRadius) {
-//    Point3D projPoint = dot(rayLine, sphereCenter) *
-//                        rayLine;      //Project to find closest point between circle center and line [proj(sphereCenter,rayLine);]
-//    float distSqr = projPoint.distToSqr(sphereCenter);          //Point-line distance (squared)
-//    float d2 = distSqr / (sphereRadius * sphereRadius);             //If distance is larger than radius, then...
-//    if (d2 > 1) return false;                                   //... the ray missed the sphere
-//    float w = sphereRadius * sqrt(1 -
-//                                  d2);                          //Pythagorean theorem to determine dist between proj point and intersection points
-//    Point3D p1 = projPoint + rayLine.dir() * w;                   //Add/subtract above distance to find hit points
-//    Point3D p2 = projPoint - rayLine.dir() * w;
-//
-//    if (dot((p1 - rayStart), rayLine.dir()) >= 0)
-//        return true;     //Is the first point in same direction as the ray line?
-//    if (dot((p2 - rayStart), rayLine.dir()) >= 0)
-//        return true;     //Is the second point in same direction as the ray line?
-//    return false;
-//}
-
-/*
- * Point light
- * I_L = I_0 / (k_c + k_1d + k_q d^2)
- */
 
 int main(int argc, char **argv) {
     if (argc != 2) {
         cout << "Please provide the file you would like to process!" << endl;
         exit(1);
     }
-    auto fileName = std::string(argv[1]);
+
+
+    boost::random::mt19937 gen(SEED);
+    boost::random::uniform_real_distribution<float> dist(0.0, 1.0);
+    dist(gen);
+
+    let fileName = std::string(argv[1]);
     cout << "Parsing " << fileName << endl;
-    const auto data = FileReader::readFile(fileName);
+    let data = FileReader::readFile(fileName);
 
-    const auto[imageWidth, imageHeight] = data.resolution;
-    auto eye = data.cameraPos;
-    auto forward = data.cameraForward;
-    auto up = data.cameraUp;
-    auto right = data.cameraRight;
+    let[imageWidth, imageHeight] = data.resolution;
+    let eye = data.cameraPos;
+    let forward = data.cameraForward;
+    let up = data.cameraUp;
+    let right = data.cameraRight;
 
-    auto imgName = data.outputImage;
+    let imgName = data.outputImage;
 
     // float versions
-    const float imgW = imageWidth, imgH = imageHeight;
+    let imgW = imageWidth, imgH = imageHeight;
 
-    const float halfW = (float) imageWidth / 2.0f, halfH = (float) imageHeight / 2.0f;
-    const float halfAngleVFOV = data.cameraFovHA;
-    const float d = halfH / tanf(halfAngleVFOV * (float) (M_PI / 180.0f));
+    let halfW = (float) imageWidth / 2.0f, halfH = (float) imageHeight / 2.0f;
+    let halfAngleVFOV = data.cameraFovHA;
+    let d = halfH / tanf(halfAngleVFOV * (float) (M_PI / 180.0f));
 
     Image outputImg = Image(imageWidth, imageHeight);
 
@@ -92,39 +78,49 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < imageWidth; i++) {
         for (int j = 0; j < imageHeight; j++) {
-            float u = (halfW - (imgW) * (((float) i + 0.5f) / imgW));
-            float v = (halfH - (imgH) * (((float) j + 0.5f) / imgH));
-            Point3D p = eye - d * forward + u * right + v * up;
-            Dir3D rayDir = (p - eye);
-            Line3D rayLine = vee(eye, rayDir).normalized();
+            Color sampleSums;
+            for (int s = 0; s < SAMPLES; s++) {
 
-            std::optional<Sphere> closest = {};
-            float closestT = std::numeric_limits<float>::max();
-            for (const auto sphere: data.spheres) {
-                auto hit = scene.raySphereIntersect(eye, rayLine, sphere);
-                if (hit) {
-                    auto value = hit.value();
-                    if (value < closestT) {
-                        closest = sphere; // TODO: passing is bad?
-                        closestT = value;
+                // First sample is in the center. The rest are random
+                let dx = s == 0 ? 0.5f : dist(gen);
+                let dy = s == 0 ? 0.5f : dist(gen);
+
+                let centerI = (float) i + dx;
+                let centerJ = (float) j + dy;
+
+                let u = (halfW - (imgW) * (centerI / imgW));
+                let v = (halfH - (imgH) * (centerJ / imgH));
+
+                Point3D p = eye - d * forward + u * right + v * up;
+                Dir3D rayDir = (p - eye);
+                Line3D rayLine = vee(eye, rayDir).normalized();
+
+                std::optional<Sphere> closest = {};
+                float closestT = std::numeric_limits<float>::max();
+                for (const auto sphere: data.spheres) {
+                    auto hit = scene.raySphereIntersect(eye, rayLine, sphere);
+                    if (hit) {
+                        auto value = hit.value();
+                        if (value < closestT) {
+                            closest = sphere; // TODO: passing is bad?
+                            closestT = value;
+                        }
                     }
                 }
+                if (closest) {
+                    let sphere = closest.value();
+                    let pointHit = eye + (rayLine.dir() * closestT);
+                    let lighting = scene.lightingOf(sphere, pointHit, rayDir.normalized(), data.spheres);
+                    sampleSums = sampleSums + lighting; // TODO: why can't this be +=
+                } else {
+                    sampleSums = sampleSums + data.background;
+                }
             }
-            if (closest) {
-                const auto sphere = closest.value();
-                const auto pointHit = eye + (rayLine.dir() * closestT);
-                const auto lighting = scene.lightingOf(sphere, pointHit, rayDir.normalized(), data.spheres);
-                outputImg.setPixel(i, j, lighting);
-            } else {
-                outputImg.setPixel(i, j, data.background);
-            }
-
-//            outputImg.setPixel(i, j, color);
-            //outputImg.setPixel(i,j, Color(fabs(i/imgW),fabs(j/imgH),fabs(0))); //TODO: Try this, what is it visualizing?
+            let predictedColor = sampleSums / SAMPLES;
+            outputImg.setPixel(i, j, predictedColor);
         }
     }
     auto t_end = std::chrono::high_resolution_clock::now();
     printf("Rendering took %.2f ms\n", std::chrono::duration<double, std::milli>(t_end - t_start).count());
-//
     outputImg.write(imgName.c_str());
 }

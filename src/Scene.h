@@ -6,8 +6,8 @@
 #include <optional>
 
 #define Kc 1.0f // standard term
-#define K1 0.6f // proportional term
-#define Kq 0.5f // squared term
+#define K1 0.2f // proportional term
+#define Kq 0.3f // squared term
 
 using std::vector;
 
@@ -19,8 +19,7 @@ public:
     Color lightingOf(const Sphere &sphere, const Point3D &hitLocation, const Dir3D &viewDirection,
                      const vector<Sphere> &spheres) {
         let pointLighting = lightingOfSphere(sphere, hitLocation, viewDirection, spheres);
-        let ambientLighting = inputData.ambientLight;
-        return pointLighting + ambientLighting;
+        return pointLighting;
     }
 
     [[nodiscard]] bool
@@ -87,7 +86,8 @@ private:
         const Dir3D normalUnnormalized = (sphereCenter - hitLocation);
         const Dir3D normal = normalUnnormalized.normalized();
 
-        Color dColor;
+        // start at ambient light color (pairwise multiplication)
+        Color dColor = material.ambient * inputData.ambientLight;
 
         for (auto pointLight : inputData.pointLights) { // TODO: change to const auto
 
@@ -102,7 +102,9 @@ private:
             let rayLine = vee(hitLocation, lightDirection).normalized();
 
             // continue because there is an intersection
-            if (anyIntersect(hitLocation, rayLine, spheres)) continue;
+            if (anyIntersect(hitLocation, rayLine, spheres)){
+                continue;
+            }
 
 
             let reflectCos = std::max({0.0f, dot(reflectionOfLight, viewDirection)});

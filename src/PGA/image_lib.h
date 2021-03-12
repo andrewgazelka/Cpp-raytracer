@@ -21,6 +21,19 @@ struct Color {
         return input;
     }
 
+    /**
+     *
+     * @param other
+     * @return  pairwise multiplication
+     */
+    Color operator*(const Color &other) const {
+        return {r * other.r, g * other.g, b * other.b};
+    }
+
+    Color operator/(const float s) const {
+        return {r / s, g / s, b / s};
+    }
+
     Color operator+(const Color &other) const {
         return {r + other.r, g + other.g, b + other.b};
     }
