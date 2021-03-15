@@ -139,7 +139,7 @@ To get around this I made an unordered map of string to enum and then used the s
 
 
 # Extra-Credit
-- I completed 55 points worth of features instead of 5. Consider jittered supersampling
+- I completed 55 points worth of features instead of 50. Consider jittered supersampling
 to be my extra credit.
   
 
