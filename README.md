@@ -24,7 +24,7 @@ We start with 50 samples per pixel on the file [spheres1.txt](.github/spheres1.t
 
 </p>
 
-# Features
+# Features 3A
 
 ## Scene Setup
 
@@ -129,6 +129,9 @@ To get around this I made an unordered map of string to enum and then used the s
 
 ## Sampling
 - See the `Features/Sampling` section
+
+# Features 3B
+
 
 # Challenges
 - The switch statements described in the previous 
