@@ -132,6 +132,12 @@ To get around this I made an unordered map of string to enum and then used the s
 
 # Features 3B
 
+- Everything in 3A
+
+## Reflections
+
+![Reflection 1](.github/sphere2-ref1.png)
+![Reflection 2](.github/spheres1-ref.png)
 
 # Challenges
 - The switch statements described in the previous 
@@ -141,8 +147,5 @@ To get around this I made an unordered map of string to enum and then used the s
 - If there is an issue, feel free to create a GitHub issue.
 
 
-# Extra-Credit
-- I completed 55 points worth of features instead of 50. Consider jittered supersampling
-to be my extra credit.
   
 
