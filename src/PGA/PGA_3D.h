@@ -163,15 +163,15 @@ struct Point3D {
     }
 
 
-    Point3D normalized() {
+    Point3D normalized() const {
         return Point3D(x, y, z); //Points are already normalized
     }
 
-    float distTo(Point3D p) {
+    float distTo(Point3D p) const {
         return sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) + (z - p.z) * (z - p.z));
     }
 
-    float distToSqr(Point3D p) {
+    float distToSqr(Point3D p) const {
         return (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) + (z - p.z) * (z - p.z);
     }
 

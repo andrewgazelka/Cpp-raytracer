@@ -180,8 +180,9 @@ struct PointLight : Light {
 
     [[nodiscard]] Color getIntensity(const Point3D &point3D) const override {
         let lightIntensity = color;
-        let distanceSq = vee(point3D, location).magnitudeSqr();
-        let loseScalar = distanceSq;
+        Dir3D dif = (point3D - location);
+        const float distanceSquared = dif.magnitudeSqr();
+        let loseScalar = distanceSquared;
 
         // intensity of the light at that point
         let I_L = lightIntensity / loseScalar;

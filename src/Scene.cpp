@@ -50,7 +50,7 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
         if (blocked && shadowHit.t < distanceToLight - epsilon) continue; // continue onto next light
 
         contribution += DiffuseContribution(light, hit);
-        contribution += SpecularContribution(light, ray, hit);
+//        contribution += SpecularContribution(light, ray, hit);
     }
 
 //    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
@@ -177,7 +177,7 @@ Color Scene::DiffuseContribution(const Light *light, const HitInformation &hit) 
     let I_L = light->getIntensity(hit.location);
     let lightDirection = light->getDirection(hit.location);
 
-    let lightCos = std::max({0.0f, dot(normal * (-1), lightDirection)}); // TODO: -1 needed
+    let lightCos = std::max({0.0f, dot(normal, (-1) * lightDirection)}); // TODO: -1 needed
 
     return (mat.diffuse * I_L) * lightCos;
 }
