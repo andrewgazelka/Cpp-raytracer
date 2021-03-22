@@ -32,24 +32,24 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
 
     for (const auto *light : inputData.getLights()) { // TODO: change to const auto
 
-        let lightDirection = light->getDirection(hitLocation);
-        let distanceToLight = light->getDistance(hitLocation);
-
-        const Line3D rayLine = vee(hitLocation, lightDirection).normalized();
-        let rayDir = rayLine.dir();
+        const Dir3D lightDirection = light->getDirection(hitLocation) * (-1);
+        const float distanceToLight = light->getDistance(hitLocation);
 
         Ray rayToLight = {
                 .origin = hitLocation,
-                .direction = rayDir
+                .direction = lightDirection
         };
 
         HitInformation shadowHit;
         bool blocked = FindIntersection(rayToLight, &shadowHit);
 
 
-        if (blocked && shadowHit.t < distanceToLight - epsilon) continue; // continue onto next light
+        if (blocked && shadowHit.t < distanceToLight){
+            continue; // continue onto next light
+        }
 
-        contribution += DiffuseContribution(light, hit);
+        let dDiffuse = DiffuseContribution(light, hit);
+        contribution += dDiffuse;
 //        contribution += SpecularContribution(light, ray, hit);
     }
 
@@ -177,7 +177,8 @@ Color Scene::DiffuseContribution(const Light *light, const HitInformation &hit) 
     let I_L = light->getIntensity(hit.location);
     let lightDirection = light->getDirection(hit.location);
 
-    let lightCos = std::max({0.0f, dot(normal, (-1) * lightDirection)}); // TODO: -1 needed
+//    let lightCos = std::max({0.0f, dot(normal, (-1) * lightDirection)}); // TODO: -1 needed
+    let lightCos = 1.0f;
 
     return (mat.diffuse * I_L) * lightCos;
 }

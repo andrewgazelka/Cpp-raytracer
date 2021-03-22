@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
 
                 Ray ray = {.origin = eye, .direction = rayDir.normalized()};
 
-                sampleSums += scene.EvaluateRayTree(ray);
+                sampleSums = sampleSums + scene.EvaluateRayTree(ray);
 
             }
             let predictedColor = sampleSums / samples;
