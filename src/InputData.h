@@ -4,6 +4,12 @@
 #include <ostream>
 #include "PGA/PGA_3D.h"
 #include "PGA/image_lib.h"
+#include "utils.h"
+#include <limits>
+
+#define Kc 0.0f // standard term
+#define K1 0.0f // proportional term
+#define Kq 1.0f // squared term.
 
 using std::vector;
 
@@ -33,7 +39,7 @@ struct Material {
     Color transmissive;
 
     /// index of refraction
-    uint ior = 1;
+    float ior = 1;
 
     inline friend std::istream &operator>>(std::istream &input, Material &res) {
         input >> res.ambient >> res.diffuse >> res.spectral >> res.phong >> res.transmissive >> res.ior;
@@ -119,18 +125,43 @@ struct Sphere : MaterialId {
 
 };
 
-struct DirectionalLight {
+struct Light {
+    [[nodiscard]] virtual Color getIntensity(const Point3D &point3D) const {
+        Color black;
+        return black;
+    };
+
+    virtual Dir3D getDirection(const Point3D &point3D) const = 0;
+
+    virtual float getDistance(const Point3D &point3D) const = 0;
+};
+
+struct DirectionalLight : Light {
     Color color;
     Dir3D direction;
 
     inline friend std::istream &operator>>(std::istream &input, DirectionalLight &res) {
         input >> res.color >> res.direction;
+        res.direction = res.direction.normalized();
         return input;
     }
 
+    [[nodiscard]] Color getIntensity(const Point3D &point3D) const override {
+        return color;
+    }
+
+    [[nodiscard]] Dir3D getDirection(const Point3D &point3D) const override {
+        return direction;
+    }
+
+    [[nodiscard]] float getDistance(const Point3D &point3D) const override {
+        return std::numeric_limits<float>::infinity();
+    }
+
+
 };
 
-struct PointLight {
+struct PointLight : Light {
     /// color
     Color color;
 
@@ -142,9 +173,29 @@ struct PointLight {
         return input;
     }
 
+    [[nodiscard]] Color getIntensity(const Point3D &point3D) const override {
+        let lightIntensity = color;
+        let distanceSq = vee(point3D, location).magnitudeSqr();
+        let loseScalar = distanceSq;
+
+        // intensity of the light at that point
+        let I_L = lightIntensity / loseScalar;
+        return I_L;
+    }
+
+    [[nodiscard]] Dir3D getDirection(const Point3D &point3D) const override {
+        const Dir3D dif = point3D - location; // TODO: is this right
+        return dif.normalized();
+    }
+
+    [[nodiscard]] float getDistance(const Point3D &point3D) const override {
+        const Dir3D dif = point3D - location;
+        return dif.magnitude();
+    }
+
 };
 
-struct SpotLight {
+struct SpotLight : Light {
     /// color
     Color color;
 
@@ -196,6 +247,21 @@ struct InputData {
     vector<SpotLight> spotLights;
     Color ambientLight = {0, 0, 0};
     uint maxDepth = 5;
+
+public:
+    vector<const Light *> getLights() const {
+        vector<const Light *> tmp(pointLights.size() + directionalLights.size());
+
+        for (const PointLight &pl : pointLights) {
+            tmp.push_back(&pl);
+        }
+
+        for (const DirectionalLight &dl : directionalLights) {
+            tmp.push_back(&dl);
+        }
+
+        return tmp;
+    }
 
 };
 

@@ -30,6 +30,18 @@ struct Color {
         return {r * other.r, g * other.g, b * other.b};
     }
 
+    void operator+=(const Color &other) {
+        r = r + other.r;
+        g = g + other.g;
+        b = b + other.b;
+    }
+
+
+
+    Color operator*(const float scalar) const {
+        return {r * scalar, g * scalar, b * scalar};
+    }
+
     Color operator/(const float s) const {
         return {r / s, g / s, b / s};
     }

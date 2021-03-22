@@ -60,7 +60,7 @@ camera_pos: -6 3 -2
 - This should be clear
 
 
-## Primitives
+## Primitive
 ### Spheres
 - This should be clear
 

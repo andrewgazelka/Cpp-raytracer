@@ -47,14 +47,23 @@ int main(int argc, char **argv) {
     }
 
 
+    /*
+     * Setup random sampling
+     */
     boost::random::mt19937 gen(SEED);
     boost::random::uniform_real_distribution<float> dist(0.0, 1.0);
     dist(gen);
 
+    /*
+     * Parsing
+     */
     let fileName = std::string(argv[1]);
     cout << "Parsing " << fileName << endl;
     let data = FileReader::readFile(fileName);
 
+    /*
+     * Getting data from parsed struct
+     */
     let[imageWidth, imageHeight] = data.resolution;
     let eye = data.cameraPos;
     let forward = data.cameraForward;
@@ -64,16 +73,28 @@ int main(int argc, char **argv) {
     let imgName = data.outputImage;
     let samples = data.samples;
 
-    // float versions
+    // float versions of width, height
     let imgW = imageWidth, imgH = imageHeight;
 
-    let halfW = (float) imageWidth / 2.0f, halfH = (float) imageHeight / 2.0f;
     let halfAngleVFOV = data.cameraFovHA;
+
+    /*
+     * The scene (helper for intersection, lighting, etc)
+     */
+    auto scene = Scene(data);
+
+
+    /*
+     * FOV calculations
+     */
+    let halfW = (float) imageWidth / 2.0f, halfH = (float) imageHeight / 2.0f;
     let d = halfH / tanf(halfAngleVFOV * (float) (M_PI / 180.0f));
 
+    /*
+     * Start image generation
+     */
     Image outputImg = Image(imageWidth, imageHeight);
 
-    auto scene = Scene(data);
     auto t_start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < imageWidth; i++) {
@@ -93,28 +114,11 @@ int main(int argc, char **argv) {
 
                 Point3D p = eye - d * forward + u * right + v * up;
                 Dir3D rayDir = (p - eye);
-                Line3D rayLine = vee(eye, rayDir).normalized();
 
-                std::optional<Sphere> closest = {};
-                float closestT = std::numeric_limits<float>::max();
-                for (const auto sphere: data.spheres) {
-                    auto hit = scene.raySphereIntersect(eye, rayLine, sphere);
-                    if (hit) {
-                        auto value = hit.value();
-                        if (value < closestT) {
-                            closest = sphere; // TODO: passing is bad?
-                            closestT = value;
-                        }
-                    }
-                }
-                if (closest) {
-                    let sphere = closest.value();
-                    let pointHit = eye + (rayLine.dir() * closestT);
-                    let lighting = scene.lightingOf(sphere, pointHit, rayDir.normalized(), data.spheres);
-                    sampleSums = sampleSums + lighting; // TODO: why can't this be +=
-                } else {
-                    sampleSums = sampleSums + data.background;
-                }
+                Ray ray = {.origin = p, .direction = rayDir.normalized()};
+
+                sampleSums += scene.EvaluateRayTree(ray);
+
             }
             let predictedColor = sampleSums / samples;
             outputImg.setPixel(i, j, predictedColor);

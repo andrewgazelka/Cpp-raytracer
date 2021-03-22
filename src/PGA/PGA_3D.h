@@ -105,17 +105,17 @@ struct Line3D {
 
     operator MultiVector() { return MultiVector(0, 0, 0, 0, 0, mx, my, mz, z, y, x, 0, 0, 0, 0, 0); }
 
-    Dir3D dir();
+    [[nodiscard]] Dir3D dir() const;
 
-    float magnitude() {
+    [[nodiscard]] float magnitude() const {
         return sqrt(x * x + y * y + z * z);
     }
 
-    float magnitudeSqr() {
+    [[nodiscard]] float magnitudeSqr() const {
         return x * x + y * y + z * z;
     }
 
-    Line3D normalized() {
+    Line3D normalized() const {
         float mag = magnitude();
         return Line3D(x / mag, y / mag, z / mag, mx / mag, my / mag, mz / mag);
     }
@@ -422,7 +422,7 @@ inline HomogeneousPoint3D HomogeneousPoint3D::operator+(HomogeneousPoint3D rhs) 
 }
 
 //Operations on Lines
-inline Dir3D Line3D::dir() {
+inline Dir3D Line3D::dir() const {
     return Dir3D(x, y, z);
 }
 

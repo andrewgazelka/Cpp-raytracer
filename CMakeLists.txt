@@ -23,7 +23,7 @@ add_executable(project3
         src/FileReader.cpp
         src/FileReader.h
         src/commands.h
-        src/InputData.h src/main.cpp src/Scene.cpp src/Scene.h src/utils.h)
+        src/InputData.h src/main.cpp src/Scene.cpp src/Scene.h src/utils.h src/collision.h src/primitives/Triangle.cpp src/primitives/Triangle.h)
 
 
 target_link_libraries(project3 PUBLIC Boost::filesystem)
