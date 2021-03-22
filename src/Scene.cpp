@@ -21,6 +21,7 @@ Color Scene::SpecularContribution(const Light *light, const Ray &viewRay, const 
     let phongCoeff = powf(reflectCos, mat.phong);
 
     let dSpecularity = (mat.spectral * I_L) * reflectCos * phongCoeff;
+    return dSpecularity;
 }
 
 Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float epsilon, int depth) {
@@ -77,7 +78,7 @@ bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
     const Sphere *minSphere = nullptr;
 
     for (const auto &sphere: inputData.spheres) {
-        auto t = raySphereIntersect(ray, sphere);
+        auto t = raySphereIntersect(ray, sphere, 0.01);
         if (t && t.value() < minT) {
             minT = t.value();
             minSphere = &sphere;
@@ -137,13 +138,14 @@ Color Scene::EvaluateRayTree(Ray ray, float iorIn, int depth) {
 
 }
 
-std::optional<float> Scene::raySphereIntersect(Ray ray, const Sphere &sphere, float epsilon) const {
+[[nodiscard]] std::optional<float> Scene::raySphereIntersect(const Ray &ray, const Sphere &sphere, float epsilon) const {
 
+    Point3D rayStart = ray.origin;
+    Dir3D dir = ray.direction;
     const auto sphereCenter = sphere.center;
     const auto sphereRadius = sphere.radius;
-    Dir3D dir = ray.direction;
     float a = dot(dir, dir);
-    Dir3D toStart = (ray.origin - sphereCenter);
+    Dir3D toStart = (rayStart - sphereCenter);
     float b = 2 * dot(dir, toStart);
     float c = dot(toStart, toStart) - sphereRadius * sphereRadius;
     float disriminant = b * b - 4 * a * c;

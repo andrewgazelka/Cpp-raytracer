@@ -21,6 +21,11 @@ struct Color {
         return input;
     }
 
+    inline friend std::ostream &operator<<(std::ostream &output, const Color &clr) {
+        output << "[ " << clr.r << "\t" << clr.g << "\t" << clr.b << " ]";
+        return output;
+    }
+
     /**
      *
      * @param other

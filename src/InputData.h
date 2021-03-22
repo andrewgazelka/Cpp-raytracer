@@ -131,9 +131,14 @@ struct Light {
         return black;
     };
 
-    virtual Dir3D getDirection(const Point3D &point3D) const = 0;
+    [[nodiscard]] virtual Dir3D getDirection(const Point3D &point3D) const {
+        Dir3D none;
+        return none;
+    };
 
-    virtual float getDistance(const Point3D &point3D) const = 0;
+    [[nodiscard]] virtual float getDistance(const Point3D &point3D) const {
+        return 0.0f;
+    }
 };
 
 struct DirectionalLight : Light {
@@ -249,8 +254,9 @@ struct InputData {
     uint maxDepth = 5;
 
 public:
-    vector<const Light *> getLights() const {
-        vector<const Light *> tmp(pointLights.size() + directionalLights.size());
+    [[nodiscard]] vector<const Light *> getLights() const {
+        vector<const Light *> tmp;
+        tmp.reserve(pointLights.size() + directionalLights.size());
 
         for (const PointLight &pl : pointLights) {
             tmp.push_back(&pl);

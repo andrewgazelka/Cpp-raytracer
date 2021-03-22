@@ -81,11 +81,11 @@ public:
 
 
     [[nodiscard]] std::optional<float>
-    raySphereIntersect(Ray ray, const Sphere &sphere, float epsilon = 0.01) const;
-
+    raySphereIntersect(const Ray &ray, const Sphere &sphere, float epsilon = 0.01) const;
 
 private:
     Color ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float epsilon = 0.01, int depth = 0);
+
     const InputData inputData;
     std::vector<Primitive::Triangle> triangles;
 };

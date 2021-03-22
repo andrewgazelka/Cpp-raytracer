@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
                 Point3D p = eye - d * forward + u * right + v * up;
                 Dir3D rayDir = (p - eye);
 
-                Ray ray = {.origin = p, .direction = rayDir.normalized()};
+                Ray ray = {.origin = eye, .direction = rayDir.normalized()};
 
                 sampleSums += scene.EvaluateRayTree(ray);
 
