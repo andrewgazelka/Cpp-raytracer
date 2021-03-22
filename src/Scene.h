@@ -27,7 +27,7 @@ struct Ray {
 class Scene {
 
 public:
-    explicit Scene(InputData inputData) : inputData(std::move(inputData)) {
+    explicit Scene(const InputData &inputData) : inputData(inputData) {
         for (const auto &triangle : inputData.triangles) {
 
             let material = inputData.materials[triangle.materialId];
