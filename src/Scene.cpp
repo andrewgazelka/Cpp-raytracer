@@ -54,8 +54,8 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
         contribution += SpecularContribution(light, ray, hit);
     }
 
-//    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
-//    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn); // reflection
+    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
+    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn); // reflection
 
     // tell if coming in or out of object
     float iorOut = iorIn == 1.0f ? material.ior : 1.0f;
