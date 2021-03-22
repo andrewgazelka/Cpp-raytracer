@@ -112,11 +112,13 @@ bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
 
         return true;
     } else if (minSphere != nullptr) {
-        Point3D location = ray.origin + ray.direction * minT;
-        Dir3D norm = (ray.origin - minSphere->center).normalized();
+        const Point3D hitLocation = ray.origin + ray.direction * minT;
+        const Dir3D normalUnnormalized = minSphere->center - hitLocation;
+        const Dir3D normal = normalUnnormalized.normalized();
+
         *hitInformation = {
-                .location = location,
-                .normal = norm,
+                .location = hitLocation,
+                .normal = normal,
                 .t = minT,
                 .material = inputData.materials[minSphere->materialId]
         };
@@ -177,8 +179,7 @@ Color Scene::DiffuseContribution(const Light *light, const HitInformation &hit) 
     let I_L = light->getIntensity(hit.location);
     let lightDirection = light->getDirection(hit.location);
 
-//    let lightCos = std::max({0.0f, dot(normal, (-1) * lightDirection)}); // TODO: -1 needed
-    let lightCos = 1.0f;
+    let lightCos = std::max({0.0f, dot(normal, lightDirection)}); // TODO: -1 needed
 
     return (mat.diffuse * I_L) * lightCos;
 }
