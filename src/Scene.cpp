@@ -53,18 +53,18 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
         contribution += SpecularContribution(light, ray, hit);
     }
 
-    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
-    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn); // reflection
+//    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
+//    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn); // reflection
 
     // tell if coming in or out of object
     float iorOut = iorIn == 1.0f ? material.ior : 1.0f;
 
     // todo glass
-    Ray glass = Refract(ray, iorIn, iorOut, hitLocation, normal); // TODO: is this right
-    contribution += material.transmissive * EvaluateRayTree(glass, iorOut); // TODO:
+//    Ray glass = Refract(ray, iorIn, iorOut, hitLocation, normal); // TODO: is this right
+//    contribution += material.transmissive * EvaluateRayTree(glass, iorOut); // TODO:
 
 
-    contribution += material.ambient;
+    contribution += material.ambient * inputData.ambientLight;
 
     // area light sources???
 
@@ -170,6 +170,7 @@ Color Scene::EvaluateRayTree(Ray ray, float iorIn, int depth) {
 }
 
 Color Scene::DiffuseContribution(const Light *light, const HitInformation &hit) {
+
     let mat = hit.material;
     let normal = hit.normal;
 
