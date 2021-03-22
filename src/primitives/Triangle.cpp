@@ -18,16 +18,29 @@ namespace Primitive {
         // alpha + beta <= 1
 
 
-        const Dir3D normal = cross(v1, v2).normalized();
+        norm = cross(v1, v2).normalized();
 
         // we will still interpolate but between three
-        n1 = normal, n2 = normal, n3 = normal;
+        n1 = norm, n2 = norm, n3 = norm;
     }
 
 
     Triangle::Triangle(const Point3D &p1, const Point3D &p2, const Point3D &p3, const Dir3D &n1, const Dir3D &n2,
                        const Dir3D &n3, const Material &material) : p1(p1), p2(p2), p3(p3), n1(n1), n2(n2), n3(n3),
-                                                                    material(material) {}
+                                                                    material(material) {
+        // the two vectors that span the triangle plane
+        Dir3D v1 = p2 - p1; // alpha
+        Dir3D v2 = p3 - p1; // beta
+
+        // 0 <= alpha <= 1
+        // 0 <= beta <= 1
+        // alpha + beta <= 1
+
+
+        norm = cross(v1, v2).normalized();
+
+
+    }
 
 
     std::optional<float> Triangle::rayPlaneIntersect(const Point3D &eye, const Dir3D &dir, float epsilon) const {
