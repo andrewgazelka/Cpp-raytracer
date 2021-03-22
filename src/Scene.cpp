@@ -10,7 +10,9 @@ Color Scene::SpecularContribution(const Light *light, const Ray &viewRay, const 
 
     let mat = hit.material;
 
-    let lightDirection = light->getDirection(hit.location);
+    Dir3D lightDirection = light->getDirection(hit.location);
+    lightDirection = lightDirection * (-1);
+
     let I_L = light->getIntensity(hit.location);
 
     let normal = hit.normal;
@@ -48,9 +50,8 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
             continue; // continue onto next light
         }
 
-        let dDiffuse = DiffuseContribution(light, hit);
-        contribution += dDiffuse;
-//        contribution += SpecularContribution(light, ray, hit);
+        contribution += DiffuseContribution(light, hit);
+        contribution += SpecularContribution(light, ray, hit);
     }
 
 //    Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
