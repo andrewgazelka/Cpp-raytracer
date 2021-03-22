@@ -55,7 +55,7 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
     }
 
     Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
-    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn); // reflection
+    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn, depth); // reflection
 
     // tell if coming in or out of object
     float iorOut = iorIn == 1.0f ? material.ior : 1.0f;
@@ -134,7 +134,7 @@ Color Scene::EvaluateRayTree(Ray ray, float iorIn, int depth) {
     HitInformation hit;
 
     if (depth <= inputData.maxDepth && FindIntersection(ray, &hit)) {
-        return ApplyLightingModel(ray, hit, iorIn);
+        return ApplyLightingModel(ray, hit, iorIn, 0.001, depth + 1);
     } else {
         return inputData.background;
     }

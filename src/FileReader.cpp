@@ -11,11 +11,15 @@ using boost::algorithm::to_lower;
 
 InputData FileReader::readFile(const string &fileName) {
 
-    ifstream inputStream(fileName);
+    const string &fn = std::filesystem::canonical(fileName);
+    ifstream inputStream(fn);
+
+
+    std::cout << "Parsing " << fn << std::endl;
 
     // is empty
     if (inputStream.peek() == std::ifstream::traits_type::eof()) {
-        printf("exit or non-existant file %s\n", fileName.c_str());
+        printf("exit or non-existant file %s\n", fn.c_str());
         exit(1);
     }
 
@@ -46,7 +50,7 @@ InputData FileReader::readFile(const string &fileName) {
         }
 
         if (start.back() != ':') {
-            printf("Error entered a line without a command!\n");
+            printf("Error entered a line without a command! --- %s\n", line.c_str());
             exit(1);
         }
 

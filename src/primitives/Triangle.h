@@ -42,9 +42,6 @@ namespace Primitive {
         Point3D p2;
         Point3D p3;
 
-        Dir3D v1;
-        Dir3D v2;
-
         Dir3D norm;
 
         Dir3D n1;

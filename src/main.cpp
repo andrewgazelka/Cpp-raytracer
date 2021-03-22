@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
      * Parsing
      */
     let fileName = std::string(argv[1]);
-    cout << "Parsing " << fileName << endl;
     let data = FileReader::readFile(fileName);
 
     /*
