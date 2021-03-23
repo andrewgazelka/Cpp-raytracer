@@ -43,12 +43,12 @@ namespace Primitive {
     }
 
 
-    std::optional<float> Triangle::rayPlaneIntersect(const Point3D &eye, const Dir3D &dir, float epsilon) const {
+    std::optional<float> Triangle::rayPlaneIntersect(const Point3D &eye, const Dir3D &dir, float epsilon) {
 
         /*
          * First step: find the intersection with the plane
          */
-        let denominator = dot(norm, dir);
+        float denominator = dot(norm, dir);
 
         // the ray is parallel to the plane. It will never collide
         if (abs(denominator) < epsilon) return {};
@@ -71,12 +71,18 @@ namespace Primitive {
         float t = dot(static_cast<Dir3D>(p1 - eye), norm) / denominator;
 
         // the collision is in the opposite direction
-        if (t < -epsilon) return {};
+        if (t < epsilon) return {};
 
         return t;
     }
 
     Barycentric Triangle::barycentric(const Point3D &point) const {
+
+        Dir3D x = point - p1;
+        float d = abs(dot(x, norm));
+
+        // make sure it is on the triangle
+        assert(d < 0.01);
 
         // inspiration from https://gamedev.stackexchange.com/a/23745
 
@@ -90,18 +96,20 @@ namespace Primitive {
 
         float denom = d00 * d11 - d01 * d01;
 
-        float alpha = (d11 * d20 - d01 * d21) / denom;
-        float beta = (d00 * d21 - d01 * d20) / denom;
-        float gamma = 1.0f - alpha - beta;
+        float v = (d11 * d20 - d01 * d21) / denom;
+        float w = (d00 * d21 - d01 * d20) / denom;
+        float u = 1.0f - v - w;
 
-        return {alpha, beta, gamma};
+        return {u, v, w};
     }
 
-    Dir3D Triangle::normalAt(Barycentric barycentric) const {
+    Dir3D Triangle::normalAt(Barycentric barycentric, Dir3D rayDir) const {
         const auto[alpha, beta, gamma] = barycentric;
         const Dir3D sum = gamma * n1 + alpha * n2 + beta * n3;
-        const Dir3D avg = sum / 3.0f;
-        return avg;
+
+        // since alpha + beta + gamma = 1.0
+
+        return dot(sum, rayDir) > 0 ? (-1) * sum  : sum;
     }
 
 

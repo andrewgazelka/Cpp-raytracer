@@ -15,6 +15,10 @@ struct Color {
 
     Color() : r(0), g(0), b(0) {}
 
+    [[nodiscard]] inline bool isNotBlack() const{
+        return r > 0 && g > 0 && b > 0;
+    }
+
 
     inline friend std::istream &operator>>(std::istream &input, Color &res) {
         input >> res.r >> res.g >> res.b;

@@ -4,14 +4,19 @@
 #include "FileReader.h"
 #include "commands.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 using std::ifstream;
 using boost::algorithm::to_lower;
 
-
 InputData FileReader::readFile(const string &fileName) {
 
     const string &fn = std::filesystem::canonical(fileName);
+    boost::filesystem::path p(fn);
+
+    string outputFileName = p.stem().string(); // example if file is tester.txt will return .txt
+    outputFileName.append(".png");
+
     ifstream inputStream(fn);
 
 
@@ -31,6 +36,8 @@ InputData FileReader::readFile(const string &fileName) {
 
     std::string line;
     uint materialId = 0;
+    std::optional<Crop> crop;
+    std::optional<string> name;
 
     // READ DATA
     while (std::getline(inputStream, line)) {
@@ -72,6 +79,20 @@ InputData FileReader::readFile(const string &fileName) {
             case Command::CAMERA_FWD:
                 ls >> data.cameraForward;
                 break;
+            case Command::PLANE: {
+                Plane toAdd;
+                ls >> toAdd;
+                toAdd.materialId = materialId;
+                data.planes.push_back(toAdd);
+                break;
+            }
+            case Command::BOX: {
+                Box toAdd;
+                ls >> toAdd;
+                toAdd.materialId = materialId;
+                data.boxes.push_back(toAdd);
+                break;
+            }
             case Command::CAMERA_UP:
                 ls >> data.cameraUp;
                 break;
@@ -81,9 +102,18 @@ InputData FileReader::readFile(const string &fileName) {
             case Command::FILM_RESOLUTION:
                 ls >> data.resolution;
                 break;
-            case Command::OUTPUT_IMAGE:
-                ls >> data.outputImage;
+            case Command::CROP: {
+                Crop cropTemp;
+                ls >> cropTemp;
+                crop = cropTemp;
                 break;
+            }
+            case Command::OUTPUT_IMAGE: {
+                string outputImage;
+                ls >> outputImage;
+                name = outputImage;
+                break;
+            }
             case Command::MAX_VERTICES:
                 ls >> data.maxVertices;
                 break;
@@ -164,6 +194,8 @@ InputData FileReader::readFile(const string &fileName) {
 
     }
 
+    data.crop = crop ? crop.value() : Crop(0, 0, data.resolution.width, data.resolution.height);
+    data.outputImage = name ? name.value() : outputFileName;
 
     // NORMALIZE DATA
     data.cameraUp = data.cameraUp.normalized();
@@ -173,6 +205,8 @@ InputData FileReader::readFile(const string &fileName) {
 
     if (right.magnitudeSqr() == 0.0) {
         printf("forward and up are parallel! Exiting.\n");
+        printf("up was %f %f %f\n", data.cameraUp.x, data.cameraUp.y, data.cameraUp.z);
+        printf("right was %f %f %f\n", data.cameraRight.x, data.cameraRight.y, data.cameraRight.z);
         exit(1);
     }
 

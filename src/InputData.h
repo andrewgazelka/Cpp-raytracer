@@ -6,10 +6,7 @@
 #include "PGA/image_lib.h"
 #include "utils.h"
 #include <limits>
-
-#define Kc 0.0f // standard term
-#define K1 0.0f // proportional term
-#define Kq 1.0f // squared term.
+#include <optional>
 
 using std::vector;
 
@@ -109,6 +106,30 @@ struct NormalTriangle : MaterialId {
 
 };
 
+struct Plane : MaterialId {
+    size_t v1, v2, v3, v4;
+
+    Plane(size_t v1, size_t v2, size_t v3, size_t v4) : MaterialId(), v1(v1), v2(v2), v3(v3), v4(v4) {}
+    Plane() = default;
+
+    inline friend std::istream &operator>>(std::istream &input, Plane &res) {
+        input >> res.v1 >> res.v2 >> res.v3 >> res.v4;
+        return input;
+    }
+};
+
+struct Box : MaterialId {
+    size_t v1, v2, v3, v4;
+
+    Box(size_t v1, size_t v2, size_t v3, size_t v4) : MaterialId(), v1(v1), v2(v2), v3(v3), v4(v4) {}
+    Box() = default;
+
+    inline friend std::istream &operator>>(std::istream &input, Box &res) {
+        input >> res.v1 >> res.v2 >> res.v3 >> res.v4;
+        return input;
+    }
+};
+
 struct Sphere : MaterialId {
 
     Sphere(const Point3D &pos, float radius) : MaterialId(), center(pos), radius(radius) {}
@@ -125,7 +146,19 @@ struct Sphere : MaterialId {
 
 };
 
+enum class LightType {
+    INVALID,
+    POINT,
+    DIRECTIONAL,
+    SPOT_LIGHT
+};
+
 struct Light {
+
+    LightType type;
+
+    explicit Light(LightType type) : type(type) {}
+
     [[nodiscard]] virtual Color getIntensity(const Point3D &point3D) const {
         Color black;
         return black;
@@ -144,6 +177,12 @@ struct Light {
 struct DirectionalLight : Light {
     Color color;
     Dir3D direction;
+
+    DirectionalLight(const Color &color, const Dir3D &direction) : Light(LightType::DIRECTIONAL), color(color),
+                                                                   direction(direction) {}
+
+    DirectionalLight() : DirectionalLight(Color(), Dir3D()) {
+    }
 
     inline friend std::istream &operator>>(std::istream &input, DirectionalLight &res) {
         input >> res.color >> res.direction;
@@ -166,12 +205,18 @@ struct DirectionalLight : Light {
 
 };
 
+
 struct PointLight : Light {
     /// color
     Color color;
 
     /// direction
     Point3D location;
+
+    PointLight(const Color &color, const Point3D &location) : Light(LightType::POINT), color(color),
+                                                              location(location) {}
+
+    PointLight() : PointLight(Color(), Point3D()) {}
 
     inline friend std::istream &operator>>(std::istream &input, PointLight &res) {
         input >> res.color >> res.location;
@@ -190,7 +235,7 @@ struct PointLight : Light {
     }
 
     [[nodiscard]] Dir3D getDirection(const Point3D &point3D) const override {
-        const Dir3D dif = point3D - location; // TODO: is this right
+        const Dir3D dif = point3D - location;
         return dif.normalized();
     }
 
@@ -211,6 +256,13 @@ struct SpotLight : Light {
     /// direction
     Dir3D direction;
 
+    SpotLight(const Color &color, const Point3D &location, const Dir3D &direction, float angle1,
+              float angle2) : Light(LightType::SPOT_LIGHT), color(color), location(location), direction(direction),
+                              angle1(angle1),
+                              angle2(angle2) {}
+
+    SpotLight() : Light(LightType::SPOT_LIGHT) {}
+
     /// how the light falls off
     float angle1, angle2;
 
@@ -226,12 +278,25 @@ struct AmbientLight {
     uint r, g, b;
 };
 
+struct Crop {
+    int fromX, fromY, toX, toY;
+
+    Crop() = default;
+
+    Crop(int fromX, int fromY, int toX, int toY) : fromX(fromX), fromY(fromY), toX(toX), toY(toY) {}
+
+    inline friend std::istream &operator>>(std::istream &input, Crop &res) {
+        input >> res.fromX >> res.fromY >> res.toX >> res.toY;
+        return input;
+    }
+};
+
 
 struct InputData {
     Point3D cameraPos = {0, 0, 0};
-    Dir3D cameraForward = {0, 0, 1};
+    Dir3D cameraForward = {0, 0, -1};
     Dir3D cameraUp = {0, 1, 0};
-    uint samples = 10;
+    uint samples = 1;
     Dir3D cameraRight = {};
     float cameraFovHA = 45.0;
     Resolution resolution = {
@@ -244,13 +309,16 @@ struct InputData {
     vector<Point3D> vertices{};
     vector<Dir3D> normals{};
     vector<Triangle> triangles{};
+    vector<Plane> planes;
+    vector<Box> boxes;
     vector<NormalTriangle> normalTriangles{};
-    vector<Sphere> spheres{};
+    vector <Sphere> spheres{};
     Color background{};
-    vector<Material> materials{};
-    vector<DirectionalLight> directionalLights{};
-    vector<PointLight> pointLights;
-    vector<SpotLight> spotLights;
+    Crop crop;
+    vector <Material> materials{};
+    vector <DirectionalLight> directionalLights{};
+    vector <PointLight> pointLights;
+    vector <SpotLight> spotLights;
     Color ambientLight = {0, 0, 0};
     uint maxDepth = 5;
 

@@ -209,6 +209,10 @@ struct Dir3D {
         return input;
     }
 
+    Dir3D operator-() const {
+        return {-x, -y, -z};
+    }
+
     [[nodiscard]] float magnitude() const {
         return sqrt(x * x + y * y + z * z);
     }

@@ -5,7 +5,6 @@ camera_pos: 0 2 -10
 camera_fwd: 0 .1 -.9 
 camera_up:  0 1 0
 camera_fov_ha: 26
-output_image: spheres2.png
 
 #"ground" sphere
 material: .75 .75 .75 .75 .75 .75 .3 .3 .3 32 .2 .2 .2 1.5
@@ -65,5 +64,5 @@ point_light: 50 50 50 10 5 -5
 ambient_light: .35 .35 .35
 background: .05 .05 .05
 
-max_depth: 2
+max_depth: 0
 samples: 10

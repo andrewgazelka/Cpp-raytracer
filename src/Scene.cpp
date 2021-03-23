@@ -1,52 +1,53 @@
 
 #include "Scene.h"
 
-#include <utility>
 #include <limits>
 
-Color Scene::SpecularContribution(const Light *light, const Ray &viewRay, const HitInformation &hit) {
-
-    let viewDirection = viewRay.direction;
-
+Color Scene::SpecularContribution(const Light *light, const Ray &viewRay, const HitInformation &hit) const {
     let mat = hit.material;
-
-    Dir3D lightDirection = light->getDirection(hit.location);
-    lightDirection = lightDirection * (-1);
-
     let I_L = light->getIntensity(hit.location);
 
+    // directionToLight 0.665371954, 0.74121666,  0.0887577161
+    const Dir3D directionToLight = -light->getDirection(hit.location);
+
+    // directionToViewer -0.635590612, 0.0786042064, -0.768014252
+    const Dir3D directionToViewer = -viewRay.direction;
+
+    // normal -0.031293232, 0.842518985, -0.53775692
     let normal = hit.normal;
 
-    const Dir3D reflectionOfLight = Reflect(lightDirection, normal);
+    // -0.700166106, 0.195558965, -0.686676084
+    const Dir3D reflectionOfLight = ReflectPointingAway(directionToLight, normal);
 
-    let reflectCos = std::max({0.0f, dot(reflectionOfLight, viewDirection)});
+    let reflectCos = std::max({0.0f, dot(reflectionOfLight, directionToViewer)});
     let phongCoeff = powf(reflectCos, mat.phong);
+
 
     let dSpecularity = (mat.spectral * I_L) * reflectCos * phongCoeff;
     return dSpecularity;
 }
 
-Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float epsilon, int depth) {
+Color Scene::ApplyLightingModel(const Ray &ray, const HitInformation &hit, float epsilon, int depth) {
 
-    let[hitLocation, normal, t, material] = hit;
+    let[hitLocation, normal, originX, originY, t, material, shape] = hit;
 
     Color contribution; // black
 
     for (const auto *light : inputData.getLights()) { // TODO: change to const auto
 
-        const Dir3D lightDirection = light->getDirection(hitLocation) * (-1);
+        const Dir3D directionToLight = -light->getDirection(hitLocation);
         const float distanceToLight = light->getDistance(hitLocation);
 
         Ray rayToLight = {
                 .origin = hitLocation,
-                .direction = lightDirection
+                .direction = directionToLight
         };
 
         HitInformation shadowHit;
-        bool blocked = FindIntersection(rayToLight, &shadowHit);
+        bool blocked = FindIntersection(rayToLight, originX, originY, &shadowHit, 0.01);
 
 
-        if (blocked && shadowHit.t < distanceToLight){
+        if (blocked && shadowHit.t < distanceToLight) {
             continue; // continue onto next light
         }
 
@@ -55,31 +56,25 @@ Color Scene::ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float 
     }
 
     Ray mirror = Reflect(ray, hitLocation, normal); // TODO: is this right
-    contribution += material.transmissive * EvaluateRayTree(mirror, iorIn, depth); // reflection
+    contribution += material.spectral * EvaluateRayTree(mirror, depth, hit.originX, hit.originY); // reflection
 
-    // tell if coming in or out of object
-    float iorOut = iorIn == 1.0f ? material.ior : 1.0f;
-
-    // todo glass
-//    Ray glass = Refract(ray, iorIn, iorOut, hitLocation, normal); // TODO: is this right
-//    contribution += material.transmissive * EvaluateRayTree(glass, iorOut); // TODO:
-
+    if (material.transmissive.isNotBlack()) {
+        const Ray rayRefract = Refract(ray, material, hitLocation, normal);
+        contribution += material.transmissive * EvaluateRayTree(rayRefract, depth, originX, originY);
+    }
 
     contribution += material.ambient * inputData.ambientLight;
-
-    // area light sources???
-
     return contribution;
-
 }
 
-bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
+bool Scene::FindIntersection(Ray ray, float originX, float originY, HitInformation *hitInformation, float epsilon) {
+
 
     float minT = std::numeric_limits<float>::max();
     const Sphere *minSphere = nullptr;
 
     for (const auto &sphere: inputData.spheres) {
-        auto t = raySphereIntersect(ray, sphere, 0.01);
+        auto t = raySphereIntersect(ray, sphere, epsilon);
         if (t && t.value() < minT) {
             minT = t.value();
             minSphere = &sphere;
@@ -89,8 +84,8 @@ bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
     const Primitive::Triangle *minTriangle = nullptr;
 
 
-    for (const auto &triangle: triangles) {
-        auto t = triangle.rayPlaneIntersect(ray.origin, ray.direction);
+    for (auto &triangle: triangles) {
+        auto t = triangle.rayPlaneIntersect(ray.origin, ray.direction, epsilon);
         if (t && t.value() < minT) {
             Point3D point3D = ray.origin + ray.direction * t.value();
             let barry = triangle.barycentric(point3D);
@@ -106,22 +101,30 @@ bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
         let barry = minTriangle->barycentric(location);
         *hitInformation = {
                 .location = location,
-                .normal = minTriangle->normalAt(barry),
+                .normal = minTriangle->normalAt(barry, ray.direction),
+                .originX = originX,
+                .originY = originY,
                 .t = minT,
                 .material = minTriangle->material,
+                .shape = TRIANGLE,
         };
 
         return true;
     } else if (minSphere != nullptr) {
         const Point3D hitLocation = ray.origin + ray.direction * minT;
-        const Dir3D normalUnnormalized = minSphere->center - hitLocation;
-        const Dir3D normal = normalUnnormalized.normalized();
+        const Dir3D dirFromCenter = hitLocation - minSphere->center;
+        const Dir3D normalUnnormalized = hitLocation - minSphere->center;
+
+        const Dir3D normalNormalized = normalUnnormalized.normalized();
 
         *hitInformation = {
                 .location = hitLocation,
-                .normal = normal,
+                .normal = normalNormalized,
+                .originX = originX,
+                .originY = originY,
                 .t = minT,
-                .material = inputData.materials[minSphere->materialId]
+                .material = inputData.materials[minSphere->materialId],
+                .shape = SPHERE
         };
 
         return true;
@@ -129,19 +132,20 @@ bool Scene::FindIntersection(Ray ray, HitInformation *hitInformation) {
     return false;
 }
 
-Color Scene::EvaluateRayTree(Ray ray, float iorIn, int depth) {
+Color Scene::EvaluateRayTree(const Ray &ray, int depth, float originX, float originY) {
 
     HitInformation hit;
 
-    if (depth <= inputData.maxDepth && FindIntersection(ray, &hit)) {
-        return ApplyLightingModel(ray, hit, iorIn, 0.001, depth + 1);
+    if (depth <= inputData.maxDepth && FindIntersection(ray, originX, originY, &hit, 0.01)) {
+        return ApplyLightingModel(ray, hit, 0.001, depth + 1);
     } else {
         return inputData.background;
     }
 
 }
 
-[[nodiscard]] std::optional<float> Scene::raySphereIntersect(const Ray &ray, const Sphere &sphere, float epsilon) const {
+[[nodiscard]] std::optional<float>
+Scene::raySphereIntersect(const Ray &ray, const Sphere &sphere, float epsilon) const {
 
     Point3D rayStart = ray.origin;
     Dir3D dir = ray.direction;
@@ -178,34 +182,57 @@ Color Scene::DiffuseContribution(const Light *light, const HitInformation &hit) 
     let normal = hit.normal;
 
     let I_L = light->getIntensity(hit.location);
-    let lightDirection = light->getDirection(hit.location);
+    let directionToLight = -light->getDirection(hit.location);
 
-    let lightCos = std::max({0.0f, dot(normal, lightDirection)}); // TODO: -1 needed
+    let lightCos = std::max({0.0f, dot(normal, directionToLight)}); // TODO: -1 needed
 
     return (mat.diffuse * I_L) * lightCos;
 }
 
+/**
+ * Reflects ASSUMES that direction points into normal
+ * @param direction
+ * @param normal
+ * @return
+ */
 Dir3D Scene::Reflect(const Dir3D &direction, const Dir3D &normal) const {
     const Dir3D reflection = direction - 2 * (dot(direction, normal) * normal);
     return reflection;
 }
 
-Ray Scene::Refract(const Ray &ray, float iorIn, float iorOut, const Point3D newOrigin, const Dir3D &normal) const {
+/**
+ * Reflects ASSUMES that the two vectors (normal and direction) are both pointing AWAY from each other...
+ * @param direction
+ * @param normal
+ * @return
+ */
+Dir3D Scene::ReflectPointingAway(const Dir3D &direction, const Dir3D &normal) const {
+    const Dir3D reflection = 2 * (dot(direction, normal) * normal) - direction;
+    return reflection;
+}
 
-    let d = ray.direction;
+Ray Scene::Refract(const Ray &ray, const Material &material, const Point3D &newOrigin, const Dir3D &normal) const {
 
-    let n = iorOut;
-    let nt = iorIn;
+    float dDotN = dot(ray.direction, normal);
+    float dDotN2 = dDotN * dDotN;
+    float eta = (dDotN < 0) ? 1.0f / material.ior : material.ior;
+    float eta2 = eta * eta;
 
-    let n2 = n * n;
-    let nt2 = nt * nt;
+    // normal correctly oriented
 
-    let dDotN = dot(d, normal);
-    let dDotN2 = dDotN * dDotN;
+    Dir3D n = (dDotN < 0) ? normal : -normal;
+    dDotN = (dDotN > 0) ? -dDotN : dDotN;
+    float disciminant = 1 - eta2 + dDotN2 * eta2;
 
-    const Dir3D first = n * (d - normal * dDotN) / nt;
-    const Dir3D second = normal * sqrtf(1.0f - n2 * (1 - dDotN2) / nt2);
-
-    const Dir3D res = first - second;
-    return {newOrigin, res};
+    if (disciminant > 0) { // there is refraction
+        // the sign is always negative since we oriented the normal correctly
+        Dir3D refractDir = (-sqrtf(disciminant) - dDotN * eta) * n + eta * ray.direction;
+        Ray rayRefract = Ray{
+                .origin = newOrigin,
+                .direction = refractDir.normalized()
+        };
+        return rayRefract;
+    } else {
+        return Reflect(ray, newOrigin, normal);
+    }
 }

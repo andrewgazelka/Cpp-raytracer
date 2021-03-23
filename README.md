@@ -15,6 +15,79 @@ on other platforms.
 ## Running
 `./project3 {input_file}`
 
+# Features 3B
+
+- Everything in 3A
+
+## Transmissive
+
+Below is a modified version of `outdoor.txt`,
+which swaps the materials for each sphere. 
+The sphere on the left is reflective and the
+sphere on the right is transmissive with an
+ior of 1.5
+![Transimissive 1](.github/outdoor-mod.png)
+
+The same image with a 1.1 transmission on the right sphere is  
+![Transimissive 2](.github/outdoor-mod2.png)
+
+with a 1.01 transmission
+
+![Transimissive 3](.github/outdoor-mod3.png)
+
+and finally with 1.00 transmission
+![Transimissive 4](.github/outdoor-mod4.png)
+
+
+## Reflections
+
+Here is the `outdoor.txt` file with only reflections and no
+transmissive term
+
+![Reflection 4](.github/outdoor-refl.png)
+
+Here is `sphere2.txt` unmodified for reference
+
+![Spheres 2](.github/spheres2-main.png)
+
+## Recursion to a bounded depth
+
+Here is spheres 2 with recursion to a bounded depth of 2 
+(which was the default)
+
+![Spheres 2](.github/spheres2-main.png)
+
+The same with a bounded depth of 1 is
+
+![Spheres 2 b](.github/spheres2-b1.png)
+We can see that the red sphere on the right of the yellow sphere is more illuminated
+with a bounded depth of 2 than 1.
+
+
+and with a bounded depth of 0 is
+![Spheres 2 c](.github/spheres2-c.png)
+There are no reflections as the depth is limited so no can occur.
+
+## Triangles
+Here is `outdoor.txt` with only one triangle
+![Tri](.github/outdoor-tri.png)
+
+## Planes
+Here is `outdoor.txt` but with a triangle replaced with a plane
+![Tri](.github/outdoor-plane.png)
+
+Here it `outdoor.txt` but with one vertex in the plane shifted up a bit.
+![Tri](.github/outdoor-plane2.png)
+
+## Boxes
+A modified version of `outdoor.txt` with a box
+![Box](.github/outdoor-box.png)
+
+
+
+# Features 3A
+
+
 ## Sample Scene 1
 We start with 50 samples per pixel on the file [spheres1.txt](.github/spheres1.txt)
 
@@ -23,8 +96,6 @@ We start with 50 samples per pixel on the file [spheres1.txt](.github/spheres1.t
 ![Sample Scene 1](.github/spheres1.png)
 
 </p>
-
-# Features 3A
 
 ## Scene Setup
 
@@ -75,7 +146,7 @@ camera_pos: -6 3 -2
 
 <p align="center">
 
-![Sample Scene 4](.github/spheres2.png)
+![Sample Scene 4](.github/spheres2-main.png)
 
 </p>
 
@@ -129,15 +200,6 @@ To get around this I made an unordered map of string to enum and then used the s
 
 ## Sampling
 - See the `Features/Sampling` section
-
-# Features 3B
-
-- Everything in 3A
-
-## Reflections
-
-![Reflection 1](.github/sphere2-ref1.png)
-![Reflection 2](.github/spheres1-ref.png)
 
 # Challenges
 - The switch statements described in the previous 

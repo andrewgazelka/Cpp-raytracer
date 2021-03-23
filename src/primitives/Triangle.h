@@ -10,6 +10,7 @@ struct Barycentric {
 
 
     [[nodiscard]] bool isCollision() const {
+//        return true;
         return (0.0f <= alpha && alpha <= 1.0f) &&
                (0.0f <= beta && beta <= 1.0f) &&
                (0.0f <= gamma && gamma <= 1.0f);
@@ -29,11 +30,11 @@ namespace Primitive {
                  const Dir3D &n3, const Material &material);
 
         [[nodiscard]] std::optional<float>
-        rayPlaneIntersect(const Point3D &eye, const Dir3D &dir, float epsilon = 0.0001) const;
+        rayPlaneIntersect(const Point3D &eye, const Dir3D &dir, float epsilon = 0.01);
 
         [[nodiscard]] Barycentric barycentric(const Point3D &point) const;
 
-        [[nodiscard]] Dir3D normalAt(Barycentric barycentric) const;
+        [[nodiscard]] Dir3D normalAt(Barycentric barycentric, Dir3D rayDir) const;
 
         Material material;
     private:

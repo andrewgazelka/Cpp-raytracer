@@ -2,14 +2,14 @@ camera_pos: 0 0 -60
 camera_fwd: 0 0 -1
 camera_up:  0 1 0
 camera_fov_ha: 15
-output_image: outdoor.png
+output_image: outdoor-mod.png
 
 # left sphere
-material: 0 0 0 .2 .2 .2 .1 .1 .1 15 .9 .9 .9 1.5
+material: 0 0 0     0 0 0    .9 .9 .9 15     0 0 0 1
 sphere: -10 -5 10 4
 
 # right sphere
-material: 0 0 0     0 0 0    .9 .9 .9 15     0 0 0 1
+material: 0 0 0 .2 .2 .2 .1 .1 .1 15 .9 .9 .9 1.5
 sphere: 10 5 10 8
 
 max_vertices: 4
@@ -30,4 +30,4 @@ directional_light: 1 1 1 -1 -1 1
 directional_light: 1 0 0 0 -1 0
 point_light: 0 100 0 0 -9 10
 
-samples: 1
+samples: 10

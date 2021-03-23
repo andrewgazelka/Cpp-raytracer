@@ -6,15 +6,29 @@
 #include <optional>
 #include <utility>
 #include "primitives/Triangle.h"
+#include "primitives/PrimitiveProcessor.h"
 
 
 using std::vector;
 
+enum Shape {
+    SPHERE,
+    TRIANGLE
+};
+
+/**
+ * @param location The location of the hit
+ * @param t the t-value given a normalized ray it hit from
+ * @param Dir3D a normal pointing OUT of the object
+ */
 struct HitInformation {
     Point3D location;
     Dir3D normal;
-    float t;
+    float originX = -1.0;
+    float originY = -1.0;
+    float t = -1.0;
     Material material;
+    Shape shape = SPHERE;
 };
 
 struct Ray {
@@ -28,36 +42,7 @@ class Scene {
 
 public:
     explicit Scene(const InputData &inputData) : inputData(inputData) {
-        for (const auto &triangle : inputData.triangles) {
-
-            let material = inputData.materials[triangle.materialId];
-
-            let p1 = inputData.vertices[triangle.v1];
-            let p2 = inputData.vertices[triangle.v2];
-            let p3 = inputData.vertices[triangle.v3];
-
-            const Primitive::Triangle tr = {p1, p2, p3, material};
-            triangles.push_back(tr);
-        }
-
-        for (const auto &normTriangle : inputData.normalTriangles) {
-
-
-            let triangle = normTriangle.triangle;
-
-            let material = inputData.materials[triangle.materialId];
-
-            let p1 = inputData.vertices[triangle.v1];
-            let p2 = inputData.vertices[triangle.v2];
-            let p3 = inputData.vertices[triangle.v3];
-
-            let n1 = inputData.normals[normTriangle.n1];
-            let n2 = inputData.normals[normTriangle.n2];
-            let n3 = inputData.normals[normTriangle.n3];
-
-            const Primitive::Triangle tr = {p1, p2, p3, n1, n2, n3, material};
-            triangles.push_back(tr);
-        }
+        triangles = PrimitiveProcessor::process(inputData);
     }
 
     [[nodiscard]] Ray Reflect(const Ray &ray, const Point3D newOrigin, const Dir3D &normal) const {
@@ -66,28 +51,37 @@ public:
     }
 
     [[nodiscard]] Ray
-    Refract(const Ray &ray, float iorIn, float iorOut, Point3D newOrigin, const Dir3D &normal) const;
+    Refract(const Ray &ray, const Material &material, const Point3D &newOrigin, const Dir3D &normal) const;
 
-    [[nodiscard]] Dir3D Reflect(const Dir3D &direction, const Dir3D &normal) const;
+    [[nodiscard]] Dir3D ReflectPointingAway(const Dir3D &direction, const Dir3D &normal) const;
 
     Color DiffuseContribution(const Light *light, const HitInformation &hit);
 
-    Color SpecularContribution(const Light *light, const Ray &viewRay, const HitInformation &hit);
+    Color SpecularContribution(const Light *light, const Ray &viewRay, const HitInformation &hit) const;
 
 
-    bool FindIntersection(Ray ray, HitInformation *hitInformation);
-
-    Color EvaluateRayTree(Ray ray, float iorIn = 1.0, int depth = 0);
+    bool FindIntersection(Ray ray, float originX, float originY, HitInformation *hitInformation, float epsilon);
 
 
     [[nodiscard]] std::optional<float>
     raySphereIntersect(const Ray &ray, const Sphere &sphere, float epsilon = 0.01) const;
 
+    Color EvaluateRayTree(const Ray &ray, float originX, float originY) {
+        return EvaluateRayTree(ray, 0, originX, originY);
+    }
+
 private:
-    Color ApplyLightingModel(Ray ray, HitInformation hit, float iorIn, float epsilon = 0.01, int depth = 0);
+
+    vector<Primitive::Triangle> triangles;
+
+    Color EvaluateRayTree(const Ray &ray, int depth, float originX, float originY);
+
+    Color ApplyLightingModel(const Ray &ray, const HitInformation &hit, float epsilon = 0.01, int depth = 0);
 
     const InputData inputData;
-    std::vector<Primitive::Triangle> triangles;
+
+    Dir3D Reflect(const Dir3D &direction, const Dir3D &normal) const;
+
 };
 
  

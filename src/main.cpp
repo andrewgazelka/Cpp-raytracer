@@ -41,11 +41,11 @@ using std::cout;
 using std::endl;
 
 int main(int argc, char **argv) {
+
     if (argc != 2) {
         cout << "Please provide the file you would like to process!" << endl;
         exit(1);
     }
-
 
     /*
      * Setup random sampling
@@ -94,10 +94,12 @@ int main(int argc, char **argv) {
      */
     Image outputImg = Image(imageWidth, imageHeight);
 
+    Crop crop = data.crop;
+
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < imageWidth; i++) {
-        for (int j = 0; j < imageHeight; j++) {
+    for (int i = crop.fromX; i < crop.toX; i++) {
+        for (int j = crop.fromY; j < crop.toY; j++) {
             Color sampleSums;
             for (int s = 0; s < samples; s++) {
 
@@ -116,7 +118,7 @@ int main(int argc, char **argv) {
 
                 Ray ray = {.origin = eye, .direction = rayDir.normalized()};
 
-                sampleSums = sampleSums + scene.EvaluateRayTree(ray);
+                sampleSums = sampleSums + scene.EvaluateRayTree(ray, (float) i, (float) j);
 
             }
             let predictedColor = sampleSums / samples;
@@ -125,5 +127,6 @@ int main(int argc, char **argv) {
     }
     auto t_end = std::chrono::high_resolution_clock::now();
     printf("Rendering took %.2f ms\n", std::chrono::duration<double, std::milli>(t_end - t_start).count());
+    printf("Outputting %s\n", imgName.c_str());
     outputImg.write(imgName.c_str());
 }
