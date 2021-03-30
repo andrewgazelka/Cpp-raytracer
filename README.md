@@ -26,9 +26,11 @@ which swaps the materials for each sphere.
 The sphere on the left is reflective and the
 sphere on the right is transmissive with an
 ior of 1.5
+
 ![Transimissive 1](.github/outdoor-mod.png)
 
 The same image with a 1.1 transmission on the right sphere is  
+
 ![Transimissive 2](.github/outdoor-mod2.png)
 
 with a 1.01 transmission
