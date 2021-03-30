@@ -36,6 +36,7 @@ with a 1.01 transmission
 ![Transimissive 3](.github/outdoor-mod3.png)
 
 and finally with 1.00 transmission
+
 ![Transimissive 4](.github/outdoor-mod4.png)
 
 
@@ -60,27 +61,34 @@ Here is spheres 2 with recursion to a bounded depth of 2
 The same with a bounded depth of 1 is
 
 ![Spheres 2 b](.github/spheres2-b1.png)
+
 We can see that the red sphere on the right of the yellow sphere is more illuminated
 with a bounded depth of 2 than 1.
 
 
 and with a bounded depth of 0 is
+
 ![Spheres 2 c](.github/spheres2-c.png)
+
 There are no reflections as the depth is limited so no can occur.
 
 ## Triangles
 Here is `outdoor.txt` with only one triangle
+
 ![Tri](.github/outdoor-tri.png)
 
 ## Planes
 Here is `outdoor.txt` but with a triangle replaced with a plane
+
 ![Tri](.github/outdoor-plane.png)
 
 Here it `outdoor.txt` but with one vertex in the plane shifted up a bit.
+
 ![Tri](.github/outdoor-plane2.png)
 
 ## Boxes
 A modified version of `outdoor.txt` with a box
+
 ![Box](.github/outdoor-box.png)
 
 
